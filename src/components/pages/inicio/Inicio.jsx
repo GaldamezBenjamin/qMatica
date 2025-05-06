@@ -1,5 +1,5 @@
-import Navbar from "../shared/Navbar";
-import Footer from "../shared/Footer";
+import Navbar from "../../shared/Navbar";
+import Footer from "../../shared/Footer";
 
 const InicioPage = () => {
   return (
