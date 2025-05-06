@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router';
-import InicioPage from './components/inicio/Inicio.jsx';
+import InicioPage from './components/pages/inicio/Inicio.jsx';
 
 function App() {
   return (
