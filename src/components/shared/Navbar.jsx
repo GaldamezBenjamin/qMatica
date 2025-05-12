@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import main2 from '../../assets/images/main2.png';
-import { auth } from '../../firebaseConfig.js';
+import { auth } from '../../firebaseClient.js';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
@@ -48,18 +48,18 @@ const Navbar = () => {
         qMática
       </div>
       <nav className="space-x-8 flex items-center text-stone-950">
-        <a href="#" className="font-medium hover:text-stone-500">
+        <a href="/quizzes" className="font-medium hover:text-stone-500">
           Quizzes
         </a>
-        <a href="#" className="font-medium hover:text-stone-500">
+        <a href="/temarios" className="font-medium hover:text-stone-500">
           Temarios
         </a>
-        <a href="#" className="font-medium hover:text-stone-500">
+        <a href="/foros" className="font-medium hover:text-stone-500">
           Foros
         </a>
         <div className="flex items-center space-x-4">
           <a
-            href="#"
+            href="/suscribirse"
             className="font-medium bg-gradient-to-r from-[#f0596c] to-[#824894] text-transparent bg-clip-text"
           >
             Suscribirse
@@ -78,6 +78,18 @@ const Navbar = () => {
               </button>
               {isDropdownOpen && (
                 <div className="absolute top-full right-0 mt-2 w-32 bg-white rounded-md shadow-lg z-10">
+                  <a
+                    href="/perfil"
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 focus:outline-none"
+                  >
+                    Perfil
+                  </a>
+                  <a
+                    href="/estadisticas"
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 focus:outline-none"
+                  >
+                    Estadísticas
+                  </a>
                   <button
                     onClick={handleSignOut}
                     className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 focus:outline-none"
@@ -89,9 +101,9 @@ const Navbar = () => {
             </div>
           ) : (
             <>
-              <a href="#" onClick={toggleLoginPopout} className="font-medium hover:text-stone-500 focus:outline-none">
+              <button onClick={toggleLoginPopout} className="font-medium hover:text-stone-500 focus:outline-none">
                 Iniciar Sesión
-              </a>
+              </button>
               <button onClick={toggleRegisterPopout} className="bg-[#f0596c] text-white font-semibold py-2 px-4 rounded hover:bg-[#ff7184] focus:outline-none">
                 Registrarse
               </button>
@@ -210,6 +222,33 @@ const RegisterPopout = ({ isVisible, onClose, onLoginClick }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       await updateProfile(user, { displayName: username });
+
+      // Llamada al backend para guardar datos adicionales del usuario
+      await fetch('/api/usuarios', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user.uid, // UID generado por Firebase Auth
+          username: username,
+          email: email,
+          rol: 'usuario', // Rol por defecto al registrarse
+          // Otros campos iniciales si es necesario
+        }),
+      });
+
+      // Llamada al backend para crear estadísticas iniciales del usuario
+      await fetch('/api/estadisticas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user.uid,
+        }),
+      });
+
       console.log('Usuario registrado:', user);
       onClose();
     } catch (error) {
