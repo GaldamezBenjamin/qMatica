@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import main2 from '../../assets/images/main2.png';
+import qMatLogo from '../../assets/svg/qMatLogo.svg';
 import { auth } from '../../firebaseClient.js';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -44,9 +45,7 @@ const Navbar = () => {
 
   return (
     <header className="bg-white py-4 px-6 flex items-center justify-between border-b-[1px] border-[#ececec]">
-      <div className="text-2xl font-black font-merriweather bg-gradient-to-r from-[#f0596c] to-[#824894] text-transparent bg-clip-text">
-        qMática
-      </div>
+      <img src={qMatLogo} className='max-h-7'></img>
       <nav className="space-x-8 flex items-center text-stone-950">
         <a href="/quizzes" className="font-medium hover:text-stone-500">
           Quizzes
@@ -326,7 +325,7 @@ const RegisterPopout = ({ isVisible, onClose, onLoginClick }) => {
             Registrarse
           </button>
           <p className="mt-6 text-center text-gray-600 text-sm">
-            ¿Ya tienes una cuenta? <button onClick={onLoginClick} className="text-[#f0596c] hover:underline focus:outline-none">Inicia sesión</button>
+            ¿No recuerdas tu contraseña? <button onClick={onLoginClick} className="text-[#f0596c] hover:underline focus:outline-none">Restablece tu contraseña</button>
           </p>
         </div>
       </div>

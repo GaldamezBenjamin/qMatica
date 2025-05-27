@@ -1,10 +1,10 @@
+import qMatLogo from '../../assets/svg/qMatLogo.svg';
+
 const Footer = () => {
   return (
     <footer className="bg-gray-100 py-8 px-6 text-center">
-      <div className="mb-5">
-        <p className="text-6xl font-black font-merriweather bg-gradient-to-r from-[#f0596c] to-[#824894] text-transparent bg-clip-text">
-          qMática
-        </p>
+      <div className="py-8">
+        <img src={qMatLogo} className='max-h-18 mx-auto'></img>
       </div>
       <div className="mb-5 text-stone-950 font-semibold text-sm">
         <a href="#" className="hover:text-stone-500 mx-6">

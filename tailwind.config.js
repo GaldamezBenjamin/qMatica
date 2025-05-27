@@ -14,6 +14,10 @@ module.exports = {
         'sans': ['Inter', ...require('tailwindcss/defaultTheme').fontFamily.sans],
         'merriweather': ['Merriweather', 'sans-serif'],
       },
+      colors: {
+        qmat1: "#f0596c",
+        qmat2: "#824894"
+      },
     },
   },
   plugins: [],
