@@ -1,9 +1,5 @@
-// src/components/pages/foro/Foro.jsx
 import React from 'react';
-import Navbar from '../../shared/Navbar';
 import Footer from "../../shared/Footer";
-import { ChatBubbleLeftRightIcon, PlusCircleIcon } from '@heroicons/react/24/solid'; // Usamos el icono sólido
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'; // Importamos el icono de búsqueda
 import main1 from "../../../assets/images/main1.png";
 
 // Datos simulados para los temas del foro (adaptados para la imagen)
@@ -35,7 +31,6 @@ export default function Foro() {
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
-            <Navbar />
 
             <div
                 className="w-full h-40 md:h-56 lg:h-64 bg-cover bg-center relative mb-6 flex items-center justify-center flex-col px-4"
@@ -52,7 +47,6 @@ export default function Foro() {
                         onClick={handleSearch}
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 flex items-center justify-center bg-transparent border-none outline-none cursor-pointer"
                     >
-                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
                     </button>
                 </div>
             </div>
@@ -63,7 +57,6 @@ export default function Foro() {
                 <div className="flex justify-between items-center mb-4">
                     <p className="text-gray-600">Mostrando {foros.length} de 12 resultados</p>
                     <button className="bg-[#f0596c] hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full flex items-center">
-                        <PlusCircleIcon className="h-5 w-5 mr-2" />
                         Crear Foro
                     </button>
                 </div>
@@ -74,7 +67,6 @@ export default function Foro() {
                         <li key={foro.id} className="bg-white rounded-lg shadow-md p-4">
                             <div className="flex items-center">
                                 <div className="relative mr-4">
-                                    <ChatBubbleLeftRightIcon className="h-8 w-8 text-gray-400" />
                                     <span className="absolute bottom-0 right-0 bg-gray-200 text-gray-600 text-xs rounded-full px-1 py-0.5">
                                         #{foro.id}
                                     </span>

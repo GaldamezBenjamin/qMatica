@@ -2,4 +2,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap');
 
 @import "tailwindcss";
+@plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "qmatica";
+  default: true; /* set as default */
+  prefersdark: true; /* set as default dark mode (prefers-color-scheme:dark) */
+  color-scheme: light; /* color of browser-provided UI */
+
+  /* Colores base (blanco y gris claro) */
+  --color-base-100: rgba(255, 255, 255, 1); /* Blanco puro para el fondo principal */
+  --color-base-200: rgba(248, 248, 248, 1); /* Gris muy claro para elementos secundarios o hover */
+  --color-base-300: rgba(242, 242, 242, 1); /* Gris claro para bordes o separadores */
+  --color-base-content: rgba(51, 51, 51, 1); /* Contenido oscuro sobre fondos claros (gris oscuro) */
+
+  /* Colores principales para destacar */
+  --color-primary: rgba(240, 89, 108, 1); /* #f0596c */
+  --color-primary-content: rgba(255, 255, 255, 1); /* Blanco para el contenido sobre primary */
+
+  --color-secondary: rgba(130, 72, 148, 1); /* #824894 */
+  --color-secondary-content: rgba(255, 255, 255, 1); /* Blanco para el contenido sobre secondary */
+
+  /* Otros colores (ajustados a tonos neutros o por defecto de daisyUI si no se especifican) */
+  --color-accent: rgba(105, 163, 200, 1); /* Ejemplo de un azul claro de acento */
+  --color-accent-content: rgba(255, 255, 255, 1);
+
+  --color-neutral: rgba(230, 230, 230, 1); /* Un gris neutro claro */
+  --color-neutral-content: rgba(51, 51, 51, 1);
+
+  --color-info: rgba(70, 180, 220, 1);
+  --color-info-content: rgba(255, 255, 255, 1);
+
+  --color-success: rgba(100, 180, 100, 1);
+  --color-success-content: rgba(255, 255, 255, 1);
+
+  --color-warning: rgba(255, 180, 0, 1);
+  --color-warning-content: rgba(51, 51, 51, 1);
+
+  --color-error: rgba(220, 70, 70, 1);
+  --color-error-content: rgba(255, 255, 255, 1);
+
+  /* border radius */
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  /* base sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  /* border size */
+  --border: 1px;
+  /* effects */
+  --depth: 1;
+  --noise: 0;
+}
+
 @config "../tailwind.config.js";

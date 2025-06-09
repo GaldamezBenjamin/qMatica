@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../../shared/Navbar';
 import Footer from "../../shared/Footer";
 import main5 from "../../../assets/images/main5.png";
 

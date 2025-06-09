@@ -1,12 +1,10 @@
 import React from 'react';
-import Navbar from '../../shared/Navbar';
 import Footer from "../../shared/Footer";
 
 
 function User() {
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
-      <Navbar />
 
       <div className="container mx-auto p-6 flex-grow">
         <h1 className="text-2xl font-semibold text-gray-800 mb-6">Perfil de Usuario</h1>
