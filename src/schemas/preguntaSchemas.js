@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// Schema for the 'opciones' nested object
 export const opcionesSchema = z
   .object({
     a: z.string().min(1, 'La opción "a" no puede estar vacía.'),
@@ -14,6 +15,7 @@ export const opcionesSchema = z
   })
   .strict("Campos no permitidos en las opciones.");
 
+// Schema for creating a new question
 export const createQuestionSchema = z
   .object({
     enunciado: z
@@ -31,6 +33,11 @@ export const createQuestionSchema = z
     id_subcategoria: z
       .string()
       .min(1, "El ID de la subcategoría es obligatorio."),
+    // --- Nuevo campo: explicacion ---
+    explicacion: z
+      .string()
+      .min(1, "La explicación no puede estar vacía.")
+      .optional(), // Hice que requiera al menos 1 caracter si está presente
   })
   .strict("Campos no permitidos en la creación de la pregunta.");
 
@@ -54,6 +61,11 @@ export const updateQuestionSchema = z
     id_subcategoria: z
       .string()
       .min(1, "El ID de la subcategoría es obligatorio.")
+      .optional(),
+    // --- Nuevo campo opcional para actualizar ---
+    explicacion: z
+      .string()
+      .min(1, "La explicación no puede estar vacía.")
       .optional(),
   })
   .strict("Campos no permitidos en la actualización de la pregunta.");

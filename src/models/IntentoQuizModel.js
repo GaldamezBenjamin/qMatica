@@ -1,11 +1,11 @@
 export const IntentoQuizModel = {
   name: 'Intentos Quiz',
   campos: [
-    { name: 'id', type: 'string', disabled: true, label: 'ID Intento' },
     { name: 'uid', type: 'string', disabled: true, label: 'ID Usuario' },
     { name: 'id_quiz', type: 'string', disabled: true, label: 'ID Quiz' },
     { name: 'fecha_inicio', type: 'timestamp', disabled: true, label: 'Fecha Inicio' },
     { name: 'fecha_fin', type: 'timestamp', disabled: true, label: 'Fecha Fin' },
+    { name: 'duracion_segundos', type: 'number', disabled: true, label: 'Tiempo Total (seg)' },
     { 
       name: 'respuestas_usuario', 
       type: 'array', 

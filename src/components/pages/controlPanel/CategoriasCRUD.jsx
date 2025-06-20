@@ -12,7 +12,7 @@ import {
   getSubCategoriaByID,
   updateSubCategoria,
   deleteSubCategoria,
-} from "../../../Helpers/apiHelpers";
+} from "../../../helpers/apiHelpers";
 
 import { CategoriaModel } from "../../../models/CategoriaModel";
 import { SubCategoriaModel } from "../../../models/SubCategoriaModel";

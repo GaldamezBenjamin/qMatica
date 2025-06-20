@@ -12,7 +12,7 @@ import {
   getMensajeByID,
   updateMensajeForo,
   deleteMensajeForo,
-} from "../../../Helpers/apiHelpers";
+} from "../../../helpers/apiHelpers";
 
 import { ForoModel } from "../../../models/ForoModel";
 import { MensajeForoModel } from "../../../models/MensajeForoModel";
@@ -25,7 +25,7 @@ import {
 import {
   createForumMessageSchema,
   updateForumMessageSchema
-} from "../../../Schemas/mensajeForoSchemas";
+} from "../../../schemas/mensajeForoSchemas";
 
 import DynamicFormCard from "./DynamicFormCard";
 import DynamicTable from "./DynamicTable";

@@ -243,9 +243,9 @@ const SubsCardSec = () => {
         <p className="text-lg mb-5">
           Suscríbete y elimina las restricciones de dificultad, obteniendo acceso total a todos los Quizzes.
           <br />
-          Accede a tutorías personalizadas.
+          Accede a quizzes personalizados.
           <br />
-          Asesora una pregunta exclusiva en tu portafolio.
+          Descarga estadísticas con más información.
         </p>
         <div className="card-actions justify-center">
           <a href="subscripcion" className="btn btn-primary min-w-[90%]">Suscríbete</a>

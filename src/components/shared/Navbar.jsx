@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link } from 'react-router';
-import { useNavigate } from 'react-router';
+import { Link } from "react-router";
+import { useNavigate } from "react-router";
 
 import qMatLogo from "../../assets/svg/qMatLogo.svg";
-import { Menu, Eye, EyeOff, UserRound, Power } from "lucide-react";
+import { Menu, UserRound, Power } from "lucide-react";
+import LoginModal from "./LoginModal.jsx";
+import RegisterModal from "./RegisterModal.jsx";
+import { useUser } from "../../context/UserContext.jsx";
 
 import { auth } from "../../firebaseClient.js";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 
 const Navbar = () => {
@@ -17,32 +18,37 @@ const Navbar = () => {
   const [userClaims, setUserClaims] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
+  const { setUserData, userData, clearUserData } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        setLoadingAuth(true);
         try {
-          const tokenResult  = await currentUser.getIdTokenResult(true);
+          const tokenResult = await currentUser.getIdTokenResult(true);
           setUserClaims(tokenResult.claims);
         } catch (error) {
           console.error("Error al obtener custom claims:", error);
-         setUserClaims(null);
+          setUserClaims(null);
+        } finally {
+          setLoadingAuth(false);
         }
       } else {
         setUserClaims(null);
+        setLoadingAuth(false);
       }
-      setLoadingAuth(false);
     });
 
     return () => unsubscribe;
-  }, [auth]);
+  }, []);
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      navigate('/');
+      clearUserData();
+      navigate("/");
     } catch (error) {
       console.error("Error al cerrar sesión:", error.message);
     }
@@ -70,12 +76,35 @@ const Navbar = () => {
     };
   }, [showLoginModal, showRegisterModal]);
 
+  // Lógica de degradado según rango para el botón de usuario
+  let gradFrom = "#de9c5f";
+  let gradTo = "#b87333";
+  let letraColor = "#744920";
+  let rangoNombre = "Bronce";
+  let exp = userData?.exp?.actual || 0;
+  if (exp >= 12000) {
+    rangoNombre = "Oro";
+    gradFrom = "#fad766";
+    gradTo = "#d4af37";
+    letraColor = "#9b7f29";
+  } else if (exp >= 6000) {
+    rangoNombre = "Plata";
+    gradFrom = "#e6e6e6";
+    gradTo = "#c0c0c0";
+    letraColor = "#7b7b7b";
+  }
+
   return (
     <>
-      <div className="navbar bg-base-100 shadow-sm fixed top-0 w-full z-30">
-        <div className="navbar-start">
+      <div className="navbar bg-base-100 shadow-sm fixed top-0 w-full z-30 flex px-4">
+        {/* Logo y menú hamburguesa */}
+        <div className="navbar-start w-75">
           <div className="dropdown">
-            <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-sm lg:hidden mr-2"
+            >
               <Menu />
             </div>
             <ul
@@ -89,78 +118,109 @@ const Navbar = () => {
                 <Link to="/foros">Foros</Link>
               </li>
               <li>
-                <Link to="/subscripcion" className="text-qmat1">
+                <Link to="/subscripcion" className="text-primary">
                   Suscribirse
                 </Link>
               </li>
-              {userClaims?.rol === 'admin' && (
+              {userClaims?.rol === "admin" && (
                 <li>
-                  <Link to="/admin" className="text-qmat1">
+                  <Link to="/admin" className="text-secondary">
                     Dashboard
                   </Link>
                 </li>
               )}
             </ul>
           </div>
-          <Link to="/">
-            <img src={qMatLogo} className="px-4 h-6 w-auto" alt="qMática"/>
+          <Link to="/" className="shrink-0">
+            <img src={qMatLogo} className="h-6 w-auto" alt="qMática" />
           </Link>
         </div>
-        <div className="navbar-end font-semibold">
-          <ul className="menu menu-horizontal px-1 hidden lg:flex">
-            <li>
-              <Link to="/quizzes">Quizzes</Link>
-            </li>
-            <li>
-              <Link to="/foros">Foros</Link>
-            </li>
-            <li>
-              <Link to="/subscripcion" className="text-qmat1">
-                Suscribirse
-              </Link>
-            </li>
-            {userClaims?.rol === 'admin' && (
+
+        {/* Contenedor principal para elementos derechos */}
+        <div className="navbar-end flex-1 justify-end w-80%">
+          {/* Enlaces de navegación - alineados a la derecha */}
+          <div className="hidden lg:flex">
+            <ul className="menu menu-horizontal px-1 gap-1 font-semibold">
               <li>
-                <Link to="/admin" className="text-secondary">
-                  Dashboard
+                <Link to="/quizzes">Quizzes</Link>
+              </li>
+              <li>
+                <Link to="/foros">Foros</Link>
+              </li>
+              <li>
+                <Link to="/subscripcion" className="text-qmat1">
+                  Suscribirse
                 </Link>
               </li>
-            )}
-          </ul>
-          <span className="font-extralight text-[#ececec] text-3xl hidden lg:flex">
-            |
-          </span>
-          {loadingAuth ? (
-            <div className="w-24 h-8 bg-gray-200 animate-pulse rounded"></div>
-          ) : user ? (
-            <>
-              <Link
-                className="btn btn-ghost mx-1 xl:btn-md btn-sm"
-                onClick={handleSignOut}
-              >
-                <Power />
-              </Link>
-              <Link className="btn btn-primary xl:btn-md btn-sm" to="/user">
-                <UserRound /> {userClaims?.username}
-              </Link>
-            </>
-          ) : (
-            <ul>
-              <Link
-                className="btn btn-ghost mx-1 xl:btn-md btn-sm"
-                onClick={toggleLoginModal}
-              >
-                Iniciar Sesión
-              </Link>
-              <Link
-                className="btn bg-qmat1 text-white xl:btn-md btn-sm"
-                onClick={toggleRegisterModal}
-              >
-                Registrarse
-              </Link>
+              {userClaims?.rol === "admin" && (
+                <li>
+                  <Link to="/admin" className="text-secondary">
+                    Dashboard
+                  </Link>
+                </li>
+              )}
             </ul>
-          )}
+          </div>
+
+          {/* Divider y botones de usuario - extremo derecho */}
+          <div className="flex items-center">
+            {(user || (!user && !loadingAuth)) && (
+              <div className="hidden md:flex h-8 w-px bg-gray-300 mx-3"></div>
+            )}
+
+            <div className="flex items-center gap-2">
+              {loadingAuth ? (
+                <div className="w-24 h-8 bg-gray-200 animate-pulse rounded"></div>
+              ) : user ? (
+                <>
+                  <button
+                    className="btn btn-ghost btn-square btn-sm"
+                    onClick={handleSignOut}
+                    aria-label="Cerrar sesión"
+                  >
+                    <Power size={20} />
+                  </button>
+                  <Link
+                    className="btn btn-sm"
+                    to="/user"
+                    style={{
+                      background: `linear-gradient(to bottom right, ${gradFrom}, ${gradTo})`,
+                      color: letraColor,
+                      border: "none",
+                    }}
+                  >
+                    <UserRound size={18} className="mr-1" />
+                    <span
+                      className="hidden md:inline"
+                      style={{ color: letraColor }}
+                    >
+                      {userData?.username || user?.displayName || "Perfil"}
+                    </span>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={toggleLoginModal}
+                  >
+                    <span className="hidden md:inline">Iniciar Sesión</span>
+                    <span className="md:hidden">Login</span>
+                  </button>
+                  <button
+                    className="btn bg-qmat1 text-white btn-sm"
+                    onClick={toggleRegisterModal}
+                  >
+                    <span className="hidden md:inline">Registrarse</span>
+                    <span className="md:hidden">Registro</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Modales */}
         {showLoginModal && (
           <LoginModal
             onClose={toggleLoginModal}
@@ -179,314 +239,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-const LoginModal = ({ onClose, registerToggle }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleLogin = async (e) => {
-    e.preventDefault(); // Previene el comportamiento por defecto del formulario
-    setError(""); // Limpia cualquier error anterior
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Si el inicio de sesión es exitoso, puedes cerrar el modal o redirigir
-      onClose();
-    } catch (firebaseError) {
-      // Manejo de errores de Firebase
-      console.error("Error al iniciar sesión:", firebaseError.code);
-      switch (firebaseError.code) {
-        case "auth/invalid-email":
-          setError("El formato del correo electrónico es inválido.");
-          break;
-        case "auth/user-disabled":
-          setError("Este usuario ha sido deshabilitado.");
-          break;
-        case "auth/user-not-found":
-        case "auth/wrong-password":
-          setError("Correo o contraseña incorrectos.");
-          break;
-        case "auth/invalid-credential": // Para versiones más recientes de Firebase
-          setError("Credenciales inválidas. Verifica tu correo y contraseña.");
-          break;
-        default:
-          setError("Error al iniciar sesión. Inténtalo de nuevo.");
-          break;
-      }
-    }
-  };
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePassword = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-      <div className="card lg:card-side bg-base-200 shadow-sm lg:mx-30 mx-10 w-[450px] min-w-[25%]">
-        <div className="card-body items-center text-center">
-          <button
-            className="btn btn-sm btn-ghost absolute right-2 top-2"
-            onClick={onClose}
-          >
-            ✕
-          </button>
-          <img src={qMatLogo} className="my-4 h-8 w-auto" alt="qMática" />
-          <div role="tablist" className="card-title tabs tabs-border">
-            <Link role="tab" className="tab tab-active text-primary">
-              Iniciar Sesión
-            </Link>
-            <Link role="tab" className="tab" onClick={registerToggle}>
-              Registrarse
-            </Link>
-          </div>
-          {error && (
-            <div
-              role="alert"
-              className="alert alert-error alert-soft min-w-[85%]"
-            >
-              <span className="w-full">{error}</span>
-            </div>
-          )}
-          <form onSubmit={handleLogin} className="min-w-[85%]">
-            <fieldset className="fieldset pb-8 justify-center min-w-[85%]">
-              <label className="fieldset-legend">
-                Correo
-              </label>
-              <input
-                type="email"
-                value={email}
-                className="input w-full"
-                placeholder="ejemplo@correo.com"
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <label className="fieldset-legend">
-                Contraseña
-              </label>
-              <div className="join">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  className="input join-item w-full"
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button type="button" className="btn join-item" onClick={togglePassword}>
-                  {showPassword ? (
-                    <EyeOff strokeWidth={1.5} />
-                  ) : (
-                    <Eye strokeWidth={1.5} />
-                  )}
-                </button>
-              </div>
-            </fieldset>
-            <div className="card-actions justify-center min-w-[85%] pb-5">
-              <button type="submit" className="btn btn-primary w-full" onClick={handleLogin}>
-                Iniciar Sesión
-              </button>
-              <Link to="/" className="font-medium pt-2">
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const RegisterModal = ({ onClose, loginToggle }) => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePassword = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault(); // Evita que el formulario recargue la página
-    setError(""); // Limpia cualquier error anterior
-    setLoading(true); // Habilita el estado de carga
-
-    if (!username || !email || !password) {
-      setError("Por favor, completa todos los campos.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      // 1. Registrar usuario en Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      // 3. Obtener el token de ID para autenticar las llamadas al backend
-      const idToken = await user.getIdToken();
-
-      // 4. Llamada al backend para guardar datos adicionales del usuario (en Firestore)
-      await fetch("/api/usuarios/profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`, // Envía el token para autenticar la API
-        },
-        body: JSON.stringify({
-          username: username,
-          email: email,
-          rol: "usuario",
-        }),
-      });
-
-      // 5. Llamada al backend para crear estadísticas iniciales del usuario
-      await fetch("/api/estadisticas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`, // Envía el token para autenticar la API
-        },
-        body: JSON.stringify({
-          quizzes_completados: 0,
-          tiempo_promedio: 0,
-          respuestas_por_categoria: [],
-        }),
-      });
-
-      console.log("Usuario registrado y perfil creado:", user);
-      onClose(); // Cierra el modal después de un registro exitoso
-    } catch (firebaseError) {
-      console.error("Error al registrar usuario:", firebaseError);
-      let errorMessage = "Error al registrar. Inténtalo de nuevo.";
-
-      switch (firebaseError.code) {
-        case "auth/email-already-in-use":
-          errorMessage = "El correo electrónico ya está registrado.";
-          break;
-        case "auth/invalid-email":
-          errorMessage = "El formato del correo electrónico es inválido.";
-          break;
-        case "auth/weak-password":
-          errorMessage = "La contraseña debe tener al menos 6 caracteres.";
-          break;
-        case "auth/operation-not-allowed":
-          errorMessage =
-            "La autenticación con correo/contraseña no está habilitada. Contacta al soporte.";
-          break;
-        default:
-          errorMessage = `Error de Firebase: ${firebaseError.message}`;
-          break;
-      }
-
-      // Si el error es de una llamada al backend, intenta parsear el mensaje
-      if (
-        firebaseError.name === "TypeError" ||
-        firebaseError.message.includes("Failed to fetch")
-      ) {
-        errorMessage =
-          "Error de conexión con el servidor. Por favor, inténtalo más tarde.";
-      } else if (firebaseError.response && firebaseError.response.json) {
-        // Asumiendo que el error del backend viene en formato JSON
-        const backendError = await firebaseError.response.json();
-        errorMessage = backendError.message || errorMessage;
-      }
-
-      setError(errorMessage);
-    } finally {
-      setLoading(false); // Deshabilita el estado de carga
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-      <div className="card lg:card-side bg-base-200 shadow-sm lg:mx-30 mx-10 w-[450px] min-w-[25%]">
-        <div className="card-body items-center text-center">
-          <button
-            className="btn btn-sm btn-ghost absolute right-2 top-2"
-            onClick={onClose}
-          >
-            ✕
-          </button>
-          <img src={qMatLogo} className="my-4 h-8 w-auto" alt="qMática" />
-          <div role="tablist" className="card-title tabs tabs-border">
-            <Link role="tab" className="tab" onClick={loginToggle}>
-              Iniciar Sesión
-            </Link>
-            <Link role="tab" className="tab tab-active text-primary">
-              Registrarse
-            </Link>
-          </div>
-          {error && (
-            <div
-              role="alert"
-              className="alert alert-error alert-soft min-w-[85%]"
-            >
-              <span className="w-full">{error}</span>
-            </div>
-          )}
-          <form onSubmit={handleRegister} className="min-w-[85%]">
-            <fieldset className="fieldset pb-8 justify-center">
-              <label className="fieldset-legend">Nombre de Usuario</label>
-              <input
-                type="text"
-                className="input w-full"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-              <label className="fieldset-legend">Correo</label>
-              <input
-                type="email"
-                className="input w-full"
-                placeholder="ejemplo@correo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <label className="fieldset-legend">Contraseña</label>
-              <div className="join">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="input join-item w-full"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="btn join-item"
-                  onClick={togglePassword}
-                >
-                  {showPassword ? (
-                    <EyeOff strokeWidth={1.5} />
-                  ) : (
-                    <Eye strokeWidth={1.5} />
-                  )}
-                </button>
-              </div>
-            </fieldset>
-            <div className="card-actions justify-center pb-5">
-              <button
-                type="submit"
-                className="btn btn-primary w-full"
-                onClick={handleRegister}
-                disabled={loading}
-              >
-                Regístrate
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};

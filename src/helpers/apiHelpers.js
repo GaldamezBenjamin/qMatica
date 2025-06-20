@@ -39,16 +39,32 @@ export const apiRequest = async (url, method, data = null, needsContentType = tr
 };
 
 // Métodos CRUD Usuarios:
+export const createUser = (data) => apiRequest('/api/usuarios/profile', 'POST', data);
+export const createStats = (data) => apiRequest('/api/estadisticas', 'POST', data);
+export const createQuizAttempt = (data) => apiRequest('/api/intentosquizzes/start', 'POST', data);
+
 export const getUsers = () => apiRequest('/api/usuarios', 'GET');
+export const getUserByID = (userId) => apiRequest(`/api/usuarios/${userId}`, 'GET');
 export const getUserStats = (userId) => apiRequest(`/api/estadisticas/${userId}`, 'GET');
 export const getUserQuizAttempts = async (userId) => apiRequest(`/api/intentosquizzes/user/${userId}`, 'GET');
+
+export const getUserProfile = (userId) => apiRequest(`/api/usuarios/${userId}/profile/`, 'GET');
+
+export const getAllStats = () => apiRequest('/api/estadisticas', 'GET');
+export const getQuizAttemptByID = (attemptId) => apiRequest(`/api/intentosquizzes/${attemptId}`, 'GET');
 
 export const updateUserBase = (userId, data) => apiRequest(`/api/usuarios/${userId}`, 'PUT', data);
 export const updateUserSubscription = (userId, data) => apiRequest(`/api/usuarios/${userId}/subscription`, 'PATCH', data);
 export const updateUserExperience = (userId, data) => apiRequest(`/api/usuarios/${userId}/experience`, 'PATCH', data);
+export const updateUserStats = (userId, data) => apiRequest(`/api/estadisticas/${userId}`, 'PUT', data);
+export const updateUserStatsSubcategoria = (userId, data) => apiRequest(`/api/estadisticas/${userId}/subcategories`, 'PATCH', data);
+export const updateQuizAttempt = (attemptId, data) => apiRequest(`/api/intentosquizzes/${attemptId}/submit`, 'PUT', data);
 
 export const deleteUser = (userId) => apiRequest(`/api/usuarios/${userId}`, 'DELETE');
+export const deleteUserStats = (userId) => apiRequest(`/api/estadisticas/${userId}`, 'DELETE');
+export const deleteQuizAttempt = (attemptId) => apiRequest(`/api/intentosquizzes/${attemptId}`, 'DELETE');
 
+export const disableUserAccount = (userId) => apiRequest(`/api/usuarios/${userId}/disable`, 'PATCH');
 
 // Métodos CRUD Categorías: (Categorías y SubCategorías) [TODOS]
 export const createCategoria = (data) => apiRequest('/api/categorias', 'POST', data);
@@ -85,8 +101,8 @@ export const deletePregunta = (preguntaID) => apiRequest(`/api/preguntas/${pregu
 
 
 // Métodos CRUD Foros: (Foros y Mensajes Foros) [TODOS]
-export const createForo = (data) => apiRequest('/api/foros/', 'POST', data);
-export const createMensajeForo = (data) => apiRequest('/api/mensajesforos/', 'POST', data);
+export const createForo = (data) => apiRequest('/api/foros', 'POST', data);
+export const createMensajeForo = (data) => apiRequest('/api/mensajesforos', 'POST', data);
 
 export const getForos = () => apiRequest('/api/foros', 'GET');
 export const getForoByID = (foroID) => apiRequest(`/api/foros/${foroID}`, 'GET');
@@ -98,3 +114,8 @@ export const updateMensajeForo = (mensajeID, data) => apiRequest(`/api/mensajesf
 
 export const deleteForo = (foroID) => apiRequest(`/api/foros/${foroID}`, 'DELETE');
 export const deleteMensajeForo = (mensajeID) => apiRequest(`/api/mensajesforos/${mensajeID}`, 'DELETE');
+
+// Métodos EXP y Rangos:
+export const getEXP = () => apiRequest('/api/exp', 'GET');
+export const getRangos = () => apiRequest('/api/exp/rangos', 'GET');
+export const getDifEXP = () => apiRequest('/api/exp/dificultad', 'GET');

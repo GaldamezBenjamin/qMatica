@@ -13,7 +13,7 @@ import {
   getPreguntaByID,
   updatePregunta,
   deletePregunta,
-} from "../../../Helpers/apiHelpers";
+} from "../../../helpers/apiHelpers";
 
 import { QuizModel } from "../../../models/QuizModel";
 import { PreguntaModel } from "../../../models/PreguntaModel";
@@ -21,13 +21,13 @@ import { PreguntaModel } from "../../../models/PreguntaModel";
 import {
   createQuizSchema,
   updateQuizSchema
-} from "../../../Schemas/quizSchemas";
+} from "../../../schemas/quizSchemas";
 
 import {
   createQuestionSchema,
   updateQuestionSchema,
   opcionesSchema
-} from "../../../Schemas/preguntaSchemas";
+} from "../../../schemas/preguntaSchemas";
 
 import DynamicFormCard from "./DynamicFormCard";
 import DynamicTable from "./DynamicTable";
@@ -89,7 +89,7 @@ export const QuizzesCRUD = () => {
     try {
       if (selectedQuiz.id_quiz) {
         // Actualizar quiz existente
-        const { id_quiz, ...dataToValidate } = selectedQuiz;
+        const { id_quiz, main_subcategory, ...dataToValidate } = selectedQuiz;
         const validatedData = updateQuizSchema.parse(dataToValidate);
         await updateQuiz(id_quiz, validatedData);
         addAlert("success", "Quiz actualizado correctamente");

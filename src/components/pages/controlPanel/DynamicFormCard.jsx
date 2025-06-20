@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Trash2, Plus } from 'lucide-react';
+import DynamicTable from './DynamicTable';
 
 const capitalize = (s) => {
   if (typeof s !== 'string') return '';
@@ -9,6 +11,8 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
   const [newArrayItem, setNewArrayItem] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
+
+  const safeData = data || {};
 
   const handleChange = (e) => {
     if (!onDataChange || readOnly) return;
@@ -53,10 +57,11 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
 
   const handleArrayChange = (fieldName, index, newValue) => {
     onDataChange(prevData => {
-      const newArray = [...(prevData[fieldName] || [])];
+      const prevArray = (prevData || {})[fieldName] || [];
+      const newArray = [...prevArray];
       newArray[index] = newValue;
       return {
-        ...prevData,
+        ...(prevData || {}),
         [fieldName]: newArray
       };
     });
@@ -66,8 +71,8 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
     if (!newArrayItem.trim()) return;
     
     onDataChange(prevData => ({
-      ...prevData,
-      [fieldName]: [...(prevData[fieldName] || []), newArrayItem]
+      ...(prevData || {}),
+      [fieldName]: [...((prevData || {})[fieldName] || []), newArrayItem]
     }));
     
     setNewArrayItem('');
@@ -76,16 +81,17 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
 
   const handleRemoveArrayItem = (fieldName, index) => {
     onDataChange(prevData => {
-      const newArray = [...(prevData[fieldName] || [])];
+      const prevArray = (prevData || {})[fieldName] || [];
+      const newArray = [...prevArray];
       newArray.splice(index, 1);
       return {
-        ...prevData,
+        ...(prevData || {}),
         [fieldName]: newArray
       };
     });
 
     // Ajustar la página si quedó vacía
-    const arrayLength = (data[fieldName] || []).length;
+    const arrayLength = (safeData[fieldName] || []).length;
     const totalPages = Math.ceil((arrayLength - 1) / itemsPerPage);
     if (currentPage > totalPages) {
       setCurrentPage(totalPages > 0 ? totalPages : 1);
@@ -96,12 +102,12 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
     if (parentFieldName) {
       return (parentValue || {})[fieldName];
     }
-    return data[fieldName];
+    return safeData[fieldName];
   };
 
   const renderArrayInput = (fieldSchema) => {
     const fieldName = fieldSchema.name;
-    const value = data[fieldName] || [];
+    const value = safeData[fieldName] || [];
     const disabledAttr = readOnly || fieldSchema.disabled;
 
     // Lógica de paginación
@@ -123,7 +129,7 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
                 <input
                   type="text"
                   className="input input-bordered input-xs w-full join-item"
-                  value={item}
+                  value={item || ''}
                   onChange={(e) => handleArrayChange(fieldName, index, e.target.value)}
                   disabled={disabledAttr}
                 />
@@ -133,9 +139,7 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
                     className="btn btn-xs join-item"
                     onClick={() => handleRemoveArrayItem(fieldName, index)}
                   >
-                    <svg className="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"/>
-                    </svg>
+                    <Trash2 size={16}/>
                   </button>
                 )}
               </div>
@@ -181,9 +185,7 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
               className="btn btn-square btn-primary btn-xs"
               onClick={() => handleAddArrayItem(fieldName)}
             >
-              <svg className="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-              </svg>
+              <Plus size={18}/>
             </button>
           </div>
         )}
@@ -191,10 +193,61 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
     );
   };
 
+  // Renderizar arrays de maps como DynamicTable si el tipo es 'array_map'
+  const renderArrayMap = (fieldSchema) => {
+    const fieldName = fieldSchema.name;
+    const value = data[fieldName] || [];
+    if (!Array.isArray(value) || value.length === 0) {
+      return <div className="text-xs text-gray-400">Sin datos</div>;
+    }
+    let campos = [];
+    if (fieldSchema.fields && typeof fieldSchema.fields === 'object' && !Array.isArray(fieldSchema.fields)) {
+      campos = Object.entries(fieldSchema.fields).map(([k, v]) => ({
+        name: k,
+        label: v.label || k,
+        type: v.type || (typeof (value[0]?.[k]) === 'number' ? 'number' : 'string')
+      }));
+    } else if (Array.isArray(fieldSchema.fields)) {
+      campos = fieldSchema.fields.map(f => ({
+        name: f.name,
+        label: f.label || f.name,
+        type: f.type || (typeof (value[0]?.[f.name]) === 'number' ? 'number' : 'string')
+      }));
+    } else {
+      campos = Object.keys(value[0] || {}).map((k) => ({
+        name: k,
+        label: k,
+        type: typeof value[0][k] === 'number' ? 'number' : 'string'
+      }));
+    }
+    const tableModel = { campos };
+    // --- Cambia el wrapper para que sea similar a object ---
+    return (
+      <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-full border-2 p-4">
+        <legend className="fieldset-legend text-sm font-bold">
+          {fieldSchema.label || capitalize(fieldSchema.name)}
+        </legend>
+        <div className="border-2 border-base-300 rounded-box">
+          <DynamicTable
+            model={tableModel}
+            data={value}
+            uniqueKeyField={campos[0]?.name || 'id'}
+            itemsPerPage={3}
+          />
+        </div>
+      </fieldset>
+    );
+  };
+
   const renderInput = (fieldSchema, parentFieldName = '', parentValue) => {
     const fullFieldName = parentFieldName ? `${parentFieldName}.${fieldSchema.name}` : fieldSchema.name;
     const value = getFieldValue(fieldSchema.name, parentFieldName, parentValue);
     const disabledAttr = readOnly || fieldSchema.disabled;
+
+    // Nuevo: Si es array_map, mostrar tabla
+    if (fieldSchema.type === 'array_map') {
+      return renderArrayMap(fieldSchema);
+    }
 
     const commonProps = {
       name: fullFieldName,
@@ -257,8 +310,17 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
     if (!fieldSchema || !fieldSchema.name) return null;
 
     const fullFieldName = parentFieldName ? `${parentFieldName}.${fieldSchema.name}` : fieldSchema.name;
-    const fieldValue = getFieldValue(fieldSchema.name, parentFieldName, data[parentFieldName]);
+    const fieldValue = getFieldValue(fieldSchema.name, parentFieldName, safeData[parentFieldName]);
     const labelClasses = `fieldset-legend capitalize !p-[5px] ${fieldSchema.disabled ? 'text-base-content' : ''}`;
+
+    // --- Si es array_map, renderiza como fieldset (como object) ---
+    if (fieldSchema.type === 'array_map') {
+      return (
+        <div key={fullFieldName} className="mb-2">
+          {renderArrayMap(fieldSchema)}
+        </div>
+      );
+    }
 
     if (fieldSchema.type === 'object' && fieldSchema.fields) {
       return (

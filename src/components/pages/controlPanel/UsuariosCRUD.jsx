@@ -11,7 +11,7 @@ import {
   updateUserSubscription,
   updateUserExperience,
   deleteUser,
-} from "../../../Helpers/apiHelpers";
+} from "../../../helpers/apiHelpers";
 
 import { UsuarioModel } from "../../../models/UsuarioModel";
 import { EstadisticaModel } from "../../../models/EstadisticaModel";
@@ -237,11 +237,14 @@ export const UsuariosCRUD = () => {
             <div className="card bg-base-200 p-4">
               <h2 className="text-xl font-bold mb-4">Estadísticas</h2>
               {userStats ? (
-                <DynamicFormCard
-                  model={EstadisticaModel}
-                  data={userStats}
-                  readOnly
-                />
+                <>
+                  <DynamicFormCard
+                    model={EstadisticaModel}
+                    data={userStats}
+                    readOnly
+                  />
+                </>
+                
               ) : (
                 <Alert type="error" message="No se encontraron estadísticas" />
               )}

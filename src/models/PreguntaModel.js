@@ -40,5 +40,12 @@ export const PreguntaModel = {
       disabled: false,
       label: "ID Subcategoría",
     },
+    {
+      name: "explicacion",
+      type: "string",
+      disabled: false,
+      label: "Explicación",
+      optional: true,
+    },
   ],
 };

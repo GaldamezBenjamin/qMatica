@@ -10,9 +10,20 @@ export const QuizModel = {
       name: 'id_preguntas', 
       type: 'array', 
       disabled: false,
+      label: 'Preguntas',
       fields: {
         id_pregunta: { type: 'string', disabled: false, label: 'ID Pregunta' },
       }
+    },
+    {
+      name: 'main_subcategory',
+      type: 'object',
+      disabled: true,
+      label: 'Sub-Categoría',
+      fields: [
+        { name: 'id', type: 'string', disabled: true, label: 'ID Subcategoría' },
+        { name: 'nombre', type: 'string', disabled: true, label: 'Nombre' }
+      ]
     }
   ]
 };
