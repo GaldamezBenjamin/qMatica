@@ -11,3 +11,40 @@ La plataforma combina la inteligencia artificial con un sistema de quizzes, el c
 - Benjamín Galdámez
 - Vanessa Matta
 - Joaquín Rodríguez
+
+---
+
+## ¿Cómo ejecutar el proyecto?
+
+1. **Clona este repositorio:**
+   ```bash
+   git clone https://github.com/tu-usuario/qMatica.git
+   cd qMatica
+   ```
+
+2. **Instala las dependencias:**
+   ```bash
+   npm install
+   ```
+   o si usas yarn:
+   ```bash
+   yarn install
+   ```
+
+3. **Configura las variables de entorno si es necesario.**
+   - Crea un archivo `.env` en la raíz del proyecto y agrega las variables necesarias según la documentación interna.
+
+4. **Ejecuta el proyecto en modo desarrollo:**
+   ```bash
+   npm run dev
+   ```
+   o con yarn:
+   ```bash
+   yarn dev
+   ```
+
+5. **Abre tu navegador en** [http://localhost:5173](http://localhost:5173) **(o el puerto que indique la consola).**
+
+---
+
+¿Dudas? Revisa la documentación interna o contacta a los autores.
