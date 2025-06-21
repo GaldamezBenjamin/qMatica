@@ -20,7 +20,7 @@ import { MensajeForoModel } from "../../../models/MensajeForoModel";
 import {
   createForumSchema,
   updateForumSchema
-} from "../../../Schemas/foroSchemas";
+} from "../../../schemas/foroSchemas";
 
 import {
   createForumMessageSchema,
@@ -212,7 +212,7 @@ export const ForosCRUD = () => {
   }, []);
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
+    <div className="flex flex-col space-y-4 p-2 md:p-4">
       {/* Mostrar alertas */}
       <div className="space-y-2">
         {alerts.map((alert) => (
@@ -238,7 +238,7 @@ export const ForosCRUD = () => {
             onDataChange={setSelectedForo}
           />
           {selectedForo && (
-            <div className="flex space-x-2 mt-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
               <button
                 className={`btn btn-primary ${loading ? "loading" : ""}`}
                 onClick={handleSaveForo}
@@ -274,15 +274,13 @@ export const ForosCRUD = () => {
                 Cerrar mensajes
               </button>
             </div>
-            
             <DynamicFormCard
               model={MensajeForoModel}
               data={selectedMensaje || {}}
               onDataChange={setSelectedMensaje}
             />
-            
             {selectedMensaje && (
-              <div className="flex space-x-2 mt-4">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
                 <button
                   className={`btn btn-primary ${loading ? "loading" : ""}`}
                   onClick={handleSaveMensaje}
@@ -307,20 +305,22 @@ export const ForosCRUD = () => {
       <div className="card bg-base-200 p-4">
         <h2 className="text-xl font-bold mb-4">Foros</h2>
         <button
-          className={`btn mb-4 ${loading ? "loading" : ""}`}
+          className={`btn ${loading ? "loading" : ""}`}
           onClick={loadData}
           disabled={loading}
         >
           Actualizar Lista
         </button>
-        <DynamicTable
-          model={ForoModel}
-          data={foros}
-          onEdit={handleSelectForo}
-          onDelete={handleDeleteForo}
-          uniqueKeyField="id_foro"
-          itemsPerPage={5}
-        />
+        <div className="overflow-x-auto">
+          <DynamicTable
+            model={ForoModel}
+            data={foros}
+            onEdit={handleSelectForo}
+            onDelete={handleDeleteForo}
+            uniqueKeyField="id_foro"
+            itemsPerPage={5}
+          />
+        </div>
       </div>
 
       {/* Tabla de mensajes (solo visible cuando hay un foro seleccionado) */}
@@ -329,15 +329,16 @@ export const ForosCRUD = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Mensajes del Foro: {selectedForo?.nombre}</h2>
           </div>
-          
-          <DynamicTable
-            model={MensajeForoModel}
-            data={mensajes}
-            onEdit={handleSelectMensaje}
-            onDelete={handleDeleteMensaje}
-            uniqueKeyField="id_mensaje"
-            itemsPerPage={5}
-          />
+          <div className="overflow-x-auto">
+            <DynamicTable
+              model={MensajeForoModel}
+              data={mensajes}
+              onEdit={handleSelectMensaje}
+              onDelete={handleDeleteMensaje}
+              uniqueKeyField="id_mensaje"
+              itemsPerPage={5}
+            />
+          </div>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from '../firebaseClient';
-import { onAuthStateChanged } from 'firebase/auth';
+import { getUserByID } from '../helpers/apiHelpers';
+import { auth } from '../firebaseClient'; // Importa tu instancia de Firebase Auth
 
 const AuthContext = createContext();
 
@@ -11,18 +11,29 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const idTokenResult = await user.getIdTokenResult();
-        setUserClaims(idTokenResult.claims);
+    // Usa Firebase Auth para obtener la id del usuario autenticado
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        const userId = firebaseUser.uid;
+        try {
+          const user = await getUserByID(userId);
+          setCurrentUser(user);
+          setUserClaims({
+            rol: user.rol,
+            suscrito: user.suscripcion.suscrito
+          });
+        } catch {
+          setCurrentUser(null);
+          setUserClaims(null);
+        }
       } else {
+        setCurrentUser(null);
         setUserClaims(null);
       }
-      setCurrentUser(user);
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
   const value = {

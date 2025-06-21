@@ -16,6 +16,7 @@ import {
 } from "../../../helpers/apiHelpers";
 import { Menu, Search, ChevronRight, Crown, X } from "lucide-react";
 import { useUser } from "../../../context/UserContext";
+import { Link } from "react-router";
 
 const areSetsEqual = (set1, set2) => {
   if (set1.size !== set2.size) return false;
@@ -25,19 +26,33 @@ const areSetsEqual = (set1, set2) => {
   return true;
 };
 
-const PanelSec = React.memo(() => (
-  <div
-    className="hero h-[300px]"
-    style={{
-      backgroundImage: `url(${mainPhoto4})`,
-    }}
-  >
-    <div className="hero-overlay bg-transparent"></div>
-    <div className="hero-content text-center text-white">
-      <h1 className="text-6xl font-bold">Quizzes</h1>
+const PanelSec = React.memo(() => {
+  const { currentUser, isSubscribed } = useAuth();
+  
+  return (
+    <div
+      className="hero h-[300px]"
+      style={{
+        backgroundImage: `url(${mainPhoto4})`,
+      }}
+    >
+      <div className="hero-overlay bg-transparent"></div>
+      <div className="hero-content text-center text-white">
+        {isSubscribed ? (
+          <div className="flex flex-col items-center">
+            <h1 className="text-5xl font-bold">¡Crea quizzes personalizados!</h1>
+            <Link to="/quizzes/creador" className="btn glass btn-lg flex items-center gap-2 text-white mt-8 font-medium">
+              Ir al Creador de Quizzes
+            </Link>
+          </div>
+          
+        ) : (
+        <h1 className="text-6xl font-bold">Quizzes</h1>
+        )}
+      </div>
     </div>
-  </div>
-));
+  );
+});
 
 const QuizOverlay = React.memo(({ reason }) => (
   <div className="absolute inset-0 bg-black/75 rounded-lg flex flex-col items-center justify-center p-4 z-10">

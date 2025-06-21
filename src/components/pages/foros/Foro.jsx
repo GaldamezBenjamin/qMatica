@@ -7,6 +7,7 @@ import {
   createMensajeForo,
   updateMensajeForo,
   deleteMensajeForo,
+  getUserByID, // <-- asegúrate de que esté importado
 } from "../../../helpers/apiHelpers";
 import { createForumMessageSchema, updateForumMessageSchema } from "../../../schemas/mensajeForoSchemas";
 import { useParams } from "react-router";
@@ -16,6 +17,8 @@ import {
   Loader2,
   ArrowDownToLine,
   Plus,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import avatarUrl from "../../../assets/images/avatar.png";
 import { formatDate } from "date-fns";
@@ -37,7 +40,23 @@ function fechaFormato(value) {
 }
 
 // --- ForoTitle: Encabezado del foro ---
-function ForoTitle({ foro, autor, onGoToLastPost, onNewPost, disableLastPost }) {
+function ForoTitle({ foro, onGoToLastPost, onNewPost, disableLastPost }) {
+  const [autor, setAutor] = useState(null);
+
+  useEffect(() => {
+    async function fetchAutor() {
+      if (foro?.creador_uid) {
+        try {
+          const user = await getUserByID(foro.creador_uid);
+          setAutor(user);
+        } catch {
+          setAutor(null);
+        }
+      }
+    }
+    fetchAutor();
+  }, [foro?.creador_uid]);
+
   // Obtener rango para color y gradiente
   const rango = autor?.exp
     ? getRangoData(autor.exp.actual || 0)
@@ -108,13 +127,27 @@ function ForoTitle({ foro, autor, onGoToLastPost, onNewPost, disableLastPost }) 
 }
 
 // --- ForoPost: Un post individual ---
-// --- ForoPost: Un post individual ---
-function ForoPost({ post, index, autor, onPostDeleted }) {
+function ForoPost({ post, index, onPostDeleted, onPostEdited }) {
   const { userData } = useUser();
+  const [autor, setAutor] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(post?.contenido || "");
   const [editLoading, setEditLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchAutor() {
+      if (post?.autor_uid) {
+        try {
+          const user = await getUserByID(post.autor_uid);
+          setAutor(user);
+        } catch {
+          setAutor(null);
+        }
+      }
+    }
+    fetchAutor();
+  }, [post?.autor_uid]);
 
   // Función para eliminar el post
   const handleDelete = async () => {
@@ -125,7 +158,6 @@ function ForoPost({ post, index, autor, onPostDeleted }) {
       // Llama a la función de callback para notificar al padre
       if (onPostDeleted) onPostDeleted(post.id_mensaje);
     } catch (error) {
-      console.error("Error al eliminar el post:", error);
       window?.toast?.error
         ? window.toast.error("No se pudo eliminar el post")
         : alert("No se pudo eliminar el post");
@@ -154,19 +186,17 @@ function ForoPost({ post, index, autor, onPostDeleted }) {
         window?.toast?.error
           ? window.toast.error(errorMsg)
           : alert(errorMsg);
+        setEditLoading(false);
         return;
       }
 
       await updateMensajeForo(post.id_mensaje, { contenido: editContent });
       setEditMode(false);
-      // Actualiza el post localmente
-      if (onPostDeleted) {
-        // En este caso usamos onPostDeleted para forzar un refresh
-        // Podrías crear un callback específico para actualización si prefieres
-        onPostDeleted(post.id_mensaje);
+      // Notifica al padre para actualizar el contenido del post
+      if (onPostEdited) {
+        onPostEdited(post.id_mensaje, editContent);
       }
     } catch (error) {
-      console.error("Error al actualizar el post:", error);
       window?.toast?.error
         ? window.toast.error("No se pudo actualizar el post")
         : alert("No se pudo actualizar el post");
@@ -178,6 +208,7 @@ function ForoPost({ post, index, autor, onPostDeleted }) {
   // Resto del componente permanece igual...
   const postNumber = index + 1;
   const fecha = fechaFormato(post?.fecha_creacion) || "-";
+  const fechaEdicion = post?.fecha_edicion ? fechaFormato(post.fecha_edicion) : null;
   const rango = autor?.exp
     ? getRangoData(autor.exp.actual || 0)
     : getRangoData(0);
@@ -189,7 +220,14 @@ function ForoPost({ post, index, autor, onPostDeleted }) {
     <div className="bg-base-100 rounded-xl shadow p-5 mb-6 min-h-75 flex flex-col gap-3">
       {/* Fila 1: fecha y número de post */}
       <div className="flex flex-row justify-between items-center mb-2">
-        <span className="text-xs text-gray-500">{fecha}</span>
+        <span className="text-xs text-gray-500">
+          {fecha}
+          {fechaEdicion && (
+            <span className="ml-2 text-xs text-gray-500">
+              - EDITADO {fechaEdicion}
+            </span>
+          )}
+        </span>
         <span className="text-xs text-gray-400">POST #{postNumber}</span>
       </div>
       {/* Fila 2: avatar+autor | mensaje */}
@@ -273,56 +311,73 @@ function ForoPost({ post, index, autor, onPostDeleted }) {
           ) : (
             <textarea
               className="textarea textarea-bordered w-full min-h-[80px]"
+              style={{
+                resize: "none",
+                height: "100%",
+                minHeight: "120px",
+                maxHeight: "300px",
+                boxSizing: "border-box",
+              }}
               value={editContent}
-              onChange={e => setEditContent(e.target.value)}
+              onChange={e => {
+                setEditContent(e.target.value);
+              }}
               disabled={editLoading}
             />
-          )}
-          {/* Nueva fila: botones de editar/eliminar si es el autor */}
-          {userData?.id === post.autor_uid && (
-            <div className="flex gap-2 mt-2">
-              {!editMode ? (
-                <>
-                  <button
-                    className="btn btn-outline btn-xs"
-                    onClick={() => {
-                      setEditContent(post?.contenido || "");
-                      setEditMode(true);
-                    }}
-                  >
-                    Editar post
-                  </button>
-                  <button
-                    className="btn btn-outline btn-error btn-xs"
-                    onClick={handleDelete}
-                    disabled={deleteLoading}
-                  >
-                    {deleteLoading ? "Eliminando..." : "Eliminar post"}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="btn btn-primary btn-xs"
-                    onClick={handleSaveEdit}
-                    disabled={editLoading}
-                  >
-                    {editLoading ? "Guardando..." : "Guardar"}
-                  </button>
-                  <button
-                    className="btn btn-ghost btn-xs"
-                    onClick={() => setEditMode(false)}
-                    disabled={editLoading}
-                  >
-                    Cancelar
-                  </button>
-                </>
-              )}
-            </div>
           )}
           <div className="h-6" />
         </div>
       </div>
+      {/* Nueva fila: botones de editar/eliminar si es el autor */}
+      {userData?.id === post.autor_uid && (
+        <div className="flex gap-2 mt-2 ml-auto">
+          {!editMode ? (
+            <>
+              <button
+                className="btn btn-outline btn-xs flex items-center gap-1"
+                onClick={() => {
+                  setEditContent(post?.contenido || "");
+                  setEditMode(true);
+                }}
+                title="Editar post"
+              >
+                <Pencil size={16} />
+                <span className="hidden sm:inline">Editar</span>
+              </button>
+              <button
+                className="btn btn-outline btn-primary btn-xs flex items-center gap-1"
+                onClick={handleDelete}
+                disabled={deleteLoading}
+                title="Eliminar post"
+              >
+                <Trash2 size={16} />
+                <span className="hidden sm:inline">
+                  {deleteLoading ? "Eliminando..." : "Eliminar"}
+                </span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="btn btn-outline btn-primary btn-xs"
+                onClick={handleSaveEdit}
+                disabled={editLoading}
+              >
+                {editLoading ? "Guardando..." : "Guardar"}
+              </button>
+              <button
+                className="btn btn-outline btn-xs"
+                onClick={() => {
+                  setEditMode(false);
+                }}
+                disabled={editLoading}
+              >
+                Cancelar
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -394,8 +449,6 @@ function NewPostBox({ value, onChange, onPublish, loading }) {
 function MainSection() {
   const { id_foro } = useParams();
   const [foro, setForo] = useState(null);
-  // Cambia autor a un diccionario de autores por uid
-  const [autores, setAutores] = useState({});
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -427,29 +480,12 @@ function MainSection() {
         if (!mounted) return;
         setForo(foroData);
 
-        // Obtener los posts y sus autores
+        // Obtener los posts (ya no obtener autores aquí)
         getMensajesFromForo(id_foro)
-          .then(async (data) => {
+          .then((data) => {
             let postsArr = Array.isArray(data) ? data : [];
-            // Obtener todos los autor_uid únicos
-            const autorUids = [
-              ...new Set(postsArr.map((msg) => msg.autor_uid).filter(Boolean)),
-            ];
-            // Obtener info de cada autor
-            const autoresObj = {};
-            await Promise.all(
-              autorUids.map(async (uid) => {
-                try {
-                  const autorData = await getUserProfile(uid);
-                  if (autorData) autoresObj[uid] = autorData;
-                } catch {
-                  // Si falla, no agrega nada
-                }
-              })
-            );
             if (mounted) {
               setPosts(postsArr);
-              setAutores(autoresObj);
             }
           })
           .catch(() => {
@@ -550,6 +586,15 @@ function MainSection() {
   // Elimina un post del estado local después de borrarlo
   const handlePostDeleted = (id_mensaje) => {
     setPosts((prev) => prev.filter((p) => p.id_mensaje !== id_mensaje));
+  };
+
+  // Actualiza el contenido de un post editado en el estado local
+  const handlePostEdited = (id_mensaje, nuevoContenido) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id_mensaje === id_mensaje ? { ...p, contenido: nuevoContenido } : p
+      )
+    );
   };
 
   // Paginación lógica
@@ -663,7 +708,6 @@ function MainSection() {
       {foro && (
         <ForoTitle
           foro={foro}
-          autor={autores[foro?.creador_uid]}
           onGoToLastPost={handleGoToLastPost}
           onNewPost={handleGoToNewPostBox}
           disableLastPost={posts.length === 0}
@@ -677,13 +721,15 @@ function MainSection() {
         ) : error ? (
           <div className="text-red-500 text-center py-8">{error}</div>
         ) : posts.length === 0 ? (
-          <div className="bg-base-100 rounded-xl shadow p-8 flex flex-col items-center justify-center mb-6">
-            <span className="text-xl font-bold text-gray-700 mb-2">
-              Parece que no hay posts
-            </span>
-            <span className="text-sm text-gray-500 mb-4 text-center">
-              Sé el primero en postear en este foro.
-            </span>
+          <>
+            <div className="bg-base-100 rounded-xl shadow p-8 flex flex-col items-center justify-center mb-6">
+              <span className="text-xl font-bold text-gray-700 mb-2">
+                Parece que no hay posts
+              </span>
+              <span className="text-sm text-gray-500 mb-4 text-center">
+                Sé el primero en postear en este foro.
+              </span>
+            </div>
             <div ref={newPostBoxRef}>
               <NewPostBox
                 value={newPost}
@@ -692,7 +738,9 @@ function MainSection() {
                 loading={publishing}
               />
             </div>
-          </div>
+          </>
+          
+          
         ) : (
           <>
             <Pagination />
@@ -706,8 +754,8 @@ function MainSection() {
                   <ForoPost
                     post={post}
                     index={globalIdx}
-                    autor={autores[post.autor_uid]}
                     onPostDeleted={handlePostDeleted}
+                    onPostEdited={handlePostEdited}
                   />
                 </div>
               );
@@ -752,7 +800,3 @@ style.innerHTML = `
   100% {background-position:0% 50%}
 }
 `;
-if (typeof window !== "undefined" && !document.getElementById("qmat-gradient-style")) {
-  style.id = "qmat-gradient-style";
-  document.head.appendChild(style);
-}

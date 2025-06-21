@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Footer from "../../shared/Footer";
 import main1 from "../../../assets/images/main1.png";
-import { getForos } from "../../../helpers/apiHelpers";
-import { Users, MessageSquare, Search, Plus, ChevronRight } from "lucide-react";
+import { getForos, createForo } from "../../../helpers/apiHelpers";
+import { Users, MessageSquare, Search, Plus, ChevronRight, X, Loader2, Check } from "lucide-react";
 import { formatDate } from "date-fns";
 import { Link } from "react-router";
+import { createForumSchema } from "../../../schemas/foroSchemas";
 
 // --- Panel: Imagen y título ---
 function Panel() {
@@ -19,7 +20,8 @@ function Panel() {
 }
 
 // --- ForosList: Lista de foros ---
-function ForosList({ searchTerm }) {
+// Agrega refresh como prop para recargar la lista al crear un foro
+function ForosList({ searchTerm, refresh }) {
   const [foros, setForos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,7 +40,7 @@ function ForosList({ searchTerm }) {
         if (mounted) setLoading(false);
       });
     return () => { mounted = false; };
-  }, []);
+  }, [refresh]);
 
   const fechaCreacion = (foro) => {
     return (formatDate(new Date(foro?.fecha_creacion._seconds * 1000),"dd/MM/yyyy"));
@@ -116,6 +118,8 @@ function ForosList({ searchTerm }) {
 // --- MainSection: Panel + búsqueda + lista ---
 function MainSection() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -134,11 +138,130 @@ function MainSection() {
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             </div>
           </div>
-          <button className="bg-qmat1 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-full flex items-center gap-2 transition">
+          <button
+            className="bg-qmat1 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-full flex items-center gap-2 transition"
+            onClick={() => setShowCreateModal(true)}
+          >
             <Plus size={18} /> Crear Foro
           </button>
         </div>
-        <ForosList searchTerm={searchTerm} />
+        <ForosList searchTerm={searchTerm} refresh={refresh} />
+      </div>
+      {showCreateModal && (
+        <CreateForoModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => {
+            setRefresh(r => !r);
+            setShowCreateModal(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Modal para crear foro
+function CreateForoModal({ onClose, onCreated }) {
+  const [titulo, setTitulo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleCrear = async (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+    // Validar con schema
+    try {
+      createForumSchema.parse({ titulo, descripcion });
+    } catch (err) {
+      setErrorMsg(err?.errors?.[0]?.message || "Datos inválidos");
+      return;
+    }
+    setLoading(true);
+    try {
+      await createForo({ titulo, descripcion });
+      if (onCreated) onCreated();
+    } catch (err) {
+      setErrorMsg("No se pudo crear el foro.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative border border-gray-200">
+        <button
+          className="absolute top-4 right-4 btn btn-sm btn-circle btn-ghost hover:bg-gray-100 transition-colors"
+          onClick={onClose}
+        >
+          <X className="w-5 h-5 text-gray-500" />
+        </button>
+        <form className="flex flex-col gap-5" onSubmit={handleCrear}>
+          <div className="text-center mb-2">
+            <Plus className="w-10 h-10 mx-auto text-primary mb-3" />
+            <h2 className="text-2xl font-bold text-gray-800">
+              Crear nuevo foro
+            </h2>
+            <p className="text-gray-500 mt-1">
+              Ingresa el título y la descripción del foro
+            </p>
+          </div>
+          <div>
+            <label className="label">
+              <span className="label-text">Título</span>
+            </label>
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              placeholder="Título del foro"
+              value={titulo}
+              onChange={e => setTitulo(e.target.value)}
+              required
+              maxLength={100}
+            />
+          </div>
+          <div>
+            <label className="label">
+              <span className="label-text">Descripción</span>
+            </label>
+            <textarea
+              className="textarea textarea-bordered w-full"
+              placeholder="Descripción del foro"
+              value={descripcion}
+              onChange={e => setDescripcion(e.target.value)}
+              required
+              maxLength={1000}
+              style={{ resize: "none" }}
+              rows={5}
+            />
+          </div>
+          {errorMsg && (
+            <div className="text-error text-sm text-center">{errorMsg}</div>
+          )}
+          <div className="flex gap-3 mt-4">
+            <button
+              type="button"
+              className="btn btn-outline flex-1"
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary flex-1 gap-2"
+              disabled={loading || !titulo.trim() || !descripcion.trim()}
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Check className="w-5 h-5" />
+              )}
+              {loading ? "Creando..." : "Crear foro"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

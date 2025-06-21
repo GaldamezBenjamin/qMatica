@@ -13,8 +13,12 @@ import User from './components/pages/user/UserProfile.jsx';
 import AdminPanel from './components/pages/controlPanel/AdminPanel.jsx';
 import SubscPage from './components/pages/subscription/Subscription.jsx';
 import NotFound from './components/pages/notFound/NotFound.jsx';
+import PaypalSuccess from './components/pages/subscription/PaypalSuccess.jsx';
+import PaypalCancel from './components/pages/subscription/PaypalCancel.jsx';
+import CreadorQuizzes from './components/pages/quizzes/CreadorQuizzes.jsx';
 
 import { ToastContainer, toast } from 'react-toastify';
+
 
 function App() {
   return (
@@ -34,6 +38,26 @@ function App() {
               </RouteGuard>
             } 
           />
+
+          {/* Ruta de suscripción (accesible solo para autenticados) */}
+          <Route 
+            path="/paypal-success" 
+            element={
+              <RouteGuard requireAuth>
+                <PaypalSuccess />
+              </RouteGuard>
+            } 
+          />
+
+          {/* Ruta de suscripción (accesible solo para autenticados) */}
+          <Route 
+            path="/paypal-cancel" 
+            element={
+              <RouteGuard requireAuth>
+                <PaypalCancel />
+              </RouteGuard>
+            } 
+          />
           
           {/* Ruta de quizzes (accesible solo para usuarios autenticados) */}
           <Route 
@@ -41,6 +65,16 @@ function App() {
             element={
               <RouteGuard requireAuth>
                 <QuizzesMenu />
+              </RouteGuard>
+            } 
+          />
+
+          {/* Ruta de quizzes (accesible solo para usuarios autenticados) */}
+          <Route 
+            path="/quizzes/creador" 
+            element={
+              <RouteGuard requireAuth requireSubscription>
+                <CreadorQuizzes />
               </RouteGuard>
             } 
           />

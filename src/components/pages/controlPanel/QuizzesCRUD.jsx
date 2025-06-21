@@ -202,7 +202,7 @@ export const QuizzesCRUD = () => {
   }, []);
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
+    <div className="flex flex-col space-y-4 p-2 md:p-4">
       {/* Mostrar alertas */}
       <div className="space-y-2">
         {alerts.map((alert) => (
@@ -228,7 +228,7 @@ export const QuizzesCRUD = () => {
             onDataChange={setSelectedQuiz}
           />
           {selectedQuiz && (
-            <div className="flex space-x-2 mt-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
               <button
                 className={`btn btn-primary ${loading ? "loading" : ""}`}
                 onClick={handleSaveQuiz}
@@ -258,7 +258,7 @@ export const QuizzesCRUD = () => {
             onDataChange={setSelectedPregunta}
           />
           {selectedPregunta && (
-            <div className="flex space-x-2 mt-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
               <button
                 className={`btn btn-primary ${loading ? "loading" : ""}`}
                 onClick={handleSavePregunta}
@@ -282,40 +282,44 @@ export const QuizzesCRUD = () => {
       <div className="card bg-base-200 p-4">
         <h2 className="text-xl font-bold mb-4">Quizzes</h2>
         <button
-          className={`btn mb-4 ${loading ? "loading" : ""}`}
+          className={`btn ${loading ? "loading" : ""}`}
           onClick={loadData}
           disabled={loading}
         >
           Actualizar Lista
         </button>
-        <DynamicTable
-          model={QuizModel}
-          data={quizzes}
-          onEdit={handleSelectQuiz}
-          onDelete={handleDeleteQuiz}
-          uniqueKeyField="id_quiz"
-          itemsPerPage={5}
-        />
+        <div className="overflow-x-auto">
+          <DynamicTable
+            model={QuizModel}
+            data={quizzes}
+            onEdit={handleSelectQuiz}
+            onDelete={handleDeleteQuiz}
+            uniqueKeyField="id_quiz"
+            itemsPerPage={5}
+          />
+        </div>
       </div>
 
       {/* Tabla de preguntas */}
       <div className="card bg-base-200 p-4">
         <h2 className="text-xl font-bold mb-4">Preguntas</h2>
         <button
-          className={`btn mb-4 ${loading ? "loading" : ""}`}
+          className={`btn ${loading ? "loading" : ""}`}
           onClick={loadData}
           disabled={loading}
         >
           Actualizar Lista
         </button>
-        <DynamicTable
-          model={PreguntaModel}
-          data={preguntas}
-          onEdit={handleSelectPregunta}
-          onDelete={handleDeletePregunta}
-          uniqueKeyField="id_pregunta"
-          itemsPerPage={5}
-        />
+        <div className="overflow-x-auto">
+          <DynamicTable
+            model={PreguntaModel}
+            data={preguntas}
+            onEdit={handleSelectPregunta}
+            onDelete={handleDeletePregunta}
+            uniqueKeyField="id_pregunta"
+            itemsPerPage={5}
+          />
+        </div>
       </div>
     </div>
   );

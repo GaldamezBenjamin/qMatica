@@ -227,13 +227,15 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
         <legend className="fieldset-legend text-sm font-bold">
           {fieldSchema.label || capitalize(fieldSchema.name)}
         </legend>
-        <div className="border-2 border-base-300 rounded-box">
-          <DynamicTable
-            model={tableModel}
-            data={value}
-            uniqueKeyField={campos[0]?.name || 'id'}
-            itemsPerPage={3}
-          />
+        <div className="border-2 border-base-300 rounded-box overflow-x-auto" style={{overflowY: "hidden"}}>
+          <div style={{ minWidth: "600px" }}>
+            <DynamicTable
+              model={tableModel}
+              data={value}
+              uniqueKeyField={campos[0]?.name || 'id'}
+              itemsPerPage={3}
+            />
+          </div>
         </div>
       </fieldset>
     );
@@ -355,8 +357,8 @@ const DynamicFormCard = ({ model, data = {}, onDataChange, readOnly = false }) =
   }
 
   return (
-    <div className="card bg-base-200 shadow-sm">
-      <fieldset className="fieldset p-4">
+    <div className="card bg-base-200 shadow-sm w-full max-w-2xl mx-auto my-2">
+      <fieldset className="fieldset p-2 md:p-4 flex flex-col gap-2">
         {(model.campos || []).map(field => renderField(field))}
       </fieldset>
     </div>

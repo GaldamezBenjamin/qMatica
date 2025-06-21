@@ -175,7 +175,7 @@ export const UsuariosCRUD = () => {
   }, []);
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
+    <div className="flex flex-col space-y-4 p-2 md:p-4">
       {/* Mostrar alertas */}
       <div className="space-y-2">
         {alerts.map((alert) => (
@@ -190,7 +190,7 @@ export const UsuariosCRUD = () => {
 
       {/* Sección de formularios */}
       <div className="flex flex-col lg:flex-row gap-4">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {selectedUser ? (
             <>
               <DynamicFormCard
@@ -198,7 +198,7 @@ export const UsuariosCRUD = () => {
                 data={selectedUser}
                 onDataChange={setSelectedUser}
               />
-              <div className="flex space-x-2 mt-4">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
                 <button
                   className={`btn btn-primary ${loading ? "loading" : ""}`}
                   onClick={handleSaveUser}
@@ -220,12 +220,13 @@ export const UsuariosCRUD = () => {
             </>
           ) : (
             <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <DynamicFormCard model={UsuarioModel} />
               </div>
-              <div className="flex-1 flex flex-col gap-4">
-                <DynamicFormCard model={EstadisticaModel} />
-                <DynamicFormCard model={IntentoQuizModel} />
+              <div className="flex-1 flex flex-col gap-4 min-w-0">
+                <div className="border-2 border-dashed border-gray-400 rounded-lg p-6 flex flex-col items-center justify-center h-full min-h-[120px] text-center text-gray-500">
+                  Selecciona un usuario para poder visualizar sus estadísticas/intentos de quiz
+                </div>
               </div>
             </div>
           )}
@@ -233,23 +234,23 @@ export const UsuariosCRUD = () => {
 
         {/* Sección de detalles del usuario */}
         {selectedUser && (
-          <div className="flex-1 flex flex-col gap-4">
+          <div className="flex-1 flex flex-col gap-4 min-w-0">
             <div className="card bg-base-200 p-4">
               <h2 className="text-xl font-bold mb-4">Estadísticas</h2>
               {userStats ? (
                 <>
-                  <DynamicFormCard
-                    model={EstadisticaModel}
-                    data={userStats}
-                    readOnly
-                  />
+                  <div className="overflow-x-auto">
+                    <DynamicFormCard
+                      model={EstadisticaModel}
+                      data={userStats}
+                      readOnly
+                    />
+                  </div>
                 </>
-                
               ) : (
                 <Alert type="error" message="No se encontraron estadísticas" />
               )}
             </div>
-
             <div className="card bg-base-200 p-4">
               <h2 className="text-xl font-bold mb-4">Intentos de Quiz</h2>
               {quizAttempts === null ? (
@@ -276,22 +277,25 @@ export const UsuariosCRUD = () => {
       </div>
 
       {/* Tabla de usuarios */}
-      <div className="mt-4">
+      <div className="card bg-base-200 p-4">
+        <h2 className="text-xl font-bold mb-4">Usuarios</h2>
         <button
-          className={`btn mb-4 ${loading ? "loading" : ""}`}
+          className={`btn ${loading ? "loading" : ""}`}
           onClick={loadUsers}
           disabled={loading}
         >
           Actualizar Lista
         </button>
-        <DynamicTable
-          model={UsuarioModel}
-          data={usuarios}
-          onEdit={handleSelectUser}
-          onDelete={handleDeleteUser}
-          uniqueKeyField="id"
-          itemsPerPage={10}
-        />
+        <div className="overflow-x-auto">
+          <DynamicTable
+            model={UsuarioModel}
+            data={usuarios}
+            onEdit={handleSelectUser}
+            onDelete={handleDeleteUser}
+            uniqueKeyField="id"
+            itemsPerPage={5}
+          />
+        </div>
       </div>
     </div>
   );

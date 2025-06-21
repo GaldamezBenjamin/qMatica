@@ -3,11 +3,12 @@ import { Link } from "react-router";
 import { useNavigate } from "react-router";
 
 import qMatLogo from "../../assets/svg/qMatLogo.svg";
-import { Menu, UserRound, Power } from "lucide-react";
+import { Menu, UserRound, Power, Crown } from "lucide-react";
 import LoginModal from "./LoginModal.jsx";
 import RegisterModal from "./RegisterModal.jsx";
 import { useUser } from "../../context/UserContext.jsx";
 
+import { useAuth } from "../../context/AuthContext.jsx";
 import { auth } from "../../firebaseClient.js";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 
@@ -15,30 +16,16 @@ const Navbar = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [user, setUser] = useState(null);
-  const [userClaims, setUserClaims] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
+  const { currentUser, isAdmin, isSubscribed, loading } = useAuth();
   const { setUserData, userData, clearUserData } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        setLoadingAuth(true);
-        try {
-          const tokenResult = await currentUser.getIdTokenResult(true);
-          setUserClaims(tokenResult.claims);
-        } catch (error) {
-          console.error("Error al obtener custom claims:", error);
-          setUserClaims(null);
-        } finally {
-          setLoadingAuth(false);
-        }
-      } else {
-        setUserClaims(null);
-        setLoadingAuth(false);
-      }
+      setLoadingAuth(false);
     });
 
     return () => unsubscribe;
@@ -119,10 +106,14 @@ const Navbar = () => {
               </li>
               <li>
                 <Link to="/subscripcion" className="text-primary">
-                  Suscribirse
+                  {!isSubscribed ? (
+                    <Crown size={20} className="inline mr-1" />
+                  ) : (
+                    "Suscribirse"
+                  )}
                 </Link>
               </li>
-              {userClaims?.rol === "admin" && (
+              {isAdmin && (
                 <li>
                   <Link to="/admin" className="text-secondary">
                     Dashboard
@@ -149,10 +140,14 @@ const Navbar = () => {
               </li>
               <li>
                 <Link to="/subscripcion" className="text-qmat1">
-                  Suscribirse
+                  {isSubscribed ? (
+                    <Crown size={20} className="inline mr-1" />
+                  ) : (
+                    "Suscribirse"
+                  )}
                 </Link>
               </li>
-              {userClaims?.rol === "admin" && (
+              {isAdmin && (
                 <li>
                   <Link to="/admin" className="text-secondary">
                     Dashboard
@@ -173,13 +168,6 @@ const Navbar = () => {
                 <div className="w-24 h-8 bg-gray-200 animate-pulse rounded"></div>
               ) : user ? (
                 <>
-                  <button
-                    className="btn btn-ghost btn-square btn-sm"
-                    onClick={handleSignOut}
-                    aria-label="Cerrar sesión"
-                  >
-                    <Power size={20} />
-                  </button>
                   <Link
                     className="btn btn-sm"
                     to="/user"
@@ -197,6 +185,13 @@ const Navbar = () => {
                       {userData?.username || user?.displayName || "Perfil"}
                     </span>
                   </Link>
+                  <button
+                    className="btn btn-ghost btn-square btn-sm"
+                    onClick={handleSignOut}
+                    aria-label="Cerrar sesión"
+                  >
+                    <Power size={20} />
+                  </button>
                 </>
               ) : (
                 <>

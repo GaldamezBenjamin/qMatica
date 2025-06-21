@@ -189,7 +189,7 @@ export const CategoriasCRUD = () => {
   }, []);
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
+    <div className="flex flex-col space-y-4 p-2 md:p-4">
       {/* Mostrar alertas */}
       <div className="space-y-2">
         {alerts.map((alert) => (
@@ -215,7 +215,7 @@ export const CategoriasCRUD = () => {
             onDataChange={setSelectedCategoria}
           />
           {selectedCategoria && (
-            <div className="flex space-x-2 mt-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
               <button
                 className={`btn btn-primary ${loading ? "loading" : ""}`}
                 onClick={handleSaveCategoria}
@@ -245,7 +245,7 @@ export const CategoriasCRUD = () => {
             onDataChange={setSelectedSubCategoria}
           />
           {selectedSubCategoria && (
-            <div className="flex space-x-2 mt-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
               <button
                 className={`btn btn-primary ${loading ? "loading" : ""}`}
                 onClick={handleSaveSubCategoria}
@@ -269,40 +269,44 @@ export const CategoriasCRUD = () => {
       <div className="card bg-base-200 p-4">
         <h2 className="text-xl font-bold mb-4">Categorías</h2>
         <button
-          className={`btn mb-4 ${loading ? "loading" : ""}`}
+          className={`btn ${loading ? "loading" : ""}`}
           onClick={loadData}
           disabled={loading}
         >
           Actualizar Lista
         </button>
-        <DynamicTable
-          model={CategoriaModel}
-          data={categorias}
-          onEdit={handleSelectCategoria}
-          onDelete={handleDeleteCategoria}
-          uniqueKeyField="id_categoria"
-          itemsPerPage={5}
-        />
+        <div className="overflow-x-auto">
+          <DynamicTable
+            model={CategoriaModel}
+            data={categorias}
+            onEdit={handleSelectCategoria}
+            onDelete={handleDeleteCategoria}
+            uniqueKeyField="id_categoria"
+            itemsPerPage={5}
+          />
+        </div>
       </div>
 
       {/* Tabla de subcategorías */}
       <div className="card bg-base-200 p-4">
         <h2 className="text-xl font-bold mb-4">Subcategorías</h2>
         <button
-          className={`btn mb-4 ${loading ? "loading" : ""}`}
+          className={`btn ${loading ? "loading" : ""}`}
           onClick={loadData}
           disabled={loading}
         >
           Actualizar Lista
         </button>
-        <DynamicTable
-          model={SubCategoriaModel}
-          data={subCategorias}
-          onEdit={handleSelectSubCategoria}
-          onDelete={handleDeleteSubCategoria}
-          uniqueKeyField="id_subcategoria"
-          itemsPerPage={5}
-        />
+        <div className="overflow-x-auto">
+          <DynamicTable
+            model={SubCategoriaModel}
+            data={subCategorias}
+            onEdit={handleSelectSubCategoria}
+            onDelete={handleDeleteSubCategoria}
+            uniqueKeyField="id_subcategoria"
+            itemsPerPage={5}
+          />
+        </div>
       </div>
     </div>
   );

@@ -13,6 +13,7 @@
   "dependencies": {
     "@react-pdf/renderer": "^4.3.0",
     "@tailwindcss/vite": "^4.1.5",
+    "axios": "^1.10.0",
     "daisyui": "^5.0.43",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",

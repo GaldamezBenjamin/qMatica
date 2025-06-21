@@ -168,7 +168,7 @@ const DynamicTable = ({
   };
 
   return (
-    <div className="overflow-x-auto mt-6">
+    <div className="overflow-x-auto mt-4 w-full">
       {tableData.length === 0 ? (
         <div role="alert" className="alert my-2 mx-4">
           <TriangleAlert size={20} />
@@ -176,7 +176,7 @@ const DynamicTable = ({
         </div>
       ) : (
         <>
-          <table className="table table-zebra w-full table-xs">
+          <table className="table table-zebra w-full table-xs min-w-[600px]">
             <thead>
               <tr>
                 <th

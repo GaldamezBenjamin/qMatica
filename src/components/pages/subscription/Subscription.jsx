@@ -1,454 +1,263 @@
-import Footer from "../../shared/Footer";
+import { Check, Crown, BarChart2, Download, Award, Star } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "../../../context/AuthContext";
+import { auth } from "../../../firebaseClient";
+import { useUser } from "../../../context/UserContext";
+
+// Cambia esto por tu plan_id real de PayPal
+const PAYPAL_PLAN_ID = import.meta.env.VITE_PAYPAL_PLAN_ID || "TU_PLAN_ID_AQUI";
 
 const SubscPage = () => {
   return (
-    <>
-      <SubMainSec />
-      <Footer />
-    </>
+    <div className="min-h-screen flex flex-col animated-gradient-bg">
+      <div className="bg-white/10 backdrop-blur-lg text-white">
+        <SubMainSec />
+      </div>
+    </div>
   );
 };
 
 export default SubscPage;
 
 const SubMainSec = () => {
+  const [loading, setLoading] = useState(false);
+  const { currentUser, isAdmin, isSubscribed } = useAuth();
+  const { refreshUserData } = useUser();
+  // Puedes agregar más estados si necesitas manejar la cancelación
+
+  // Función para cancelar la suscripción (debes implementar el endpoint backend)
+  const handleCancel = async () => {
+    if (!window.confirm("¿Seguro que deseas cancelar tu suscripción?")) return;
+    setLoading(true);
+    try {
+      const user = auth.currentUser;
+      const token = await user.getIdToken();
+      const res = await fetch("/api/paypal/cancel-subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId: currentUser?.uid }) // o el campo que uses
+      });
+      if (!res.ok) throw new Error("Error cancelando suscripción");
+      alert("Suscripción cancelada.");
+      await refreshUserData();
+      // Aquí podrías actualizar el estado global o recargar la página
+    } catch (err) {
+      alert("Ocurrió un error al cancelar.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const features = [
+    {
+      icon: <Crown className="w-8 h-8 text-yellow-300" />,
+      title: "Acceso Completo",
+      description: "Desbloquea todos los quizzes sin restricciones de dificultad."
+    },
+    {
+      icon: <BarChart2 className="w-8 h-8 text-blue-500" />,
+      title: "Quizzes Personalizados",
+      description: "Recibe contenido adaptado a tu nivel y áreas de interés."
+    },
+    {
+      icon: <Download className="w-8 h-8 text-green-300" />,
+      title: "Estadísticas Detalladas",
+      description: "Accede a informes completos de tu progreso y rendimiento."
+    },
+    {
+      icon: <Award className="w-8 h-8 text-purple-500" />,
+      title: "Reconocimientos",
+      description: "Obtén logros y medallas por tu avance y dedicación."
+    }
+  ];
+
+  // Función para iniciar el proceso de suscripción con PayPal
+  const handleSubscribe = async () => {
+    setLoading(true);
+    try {
+      const user = auth.currentUser;
+      const token = await user.getIdToken();
+      const res = await fetch("/api/paypal/create-subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ plan_id: PAYPAL_PLAN_ID })
+      });
+      if (!res.ok) throw new Error("Error iniciando suscripción");
+      const data = await res.json();
+      const approveLink = data.links?.find(link => link.rel === "approve");
+      if (approveLink) {
+        window.location.href = approveLink.href; // Redirige a PayPal
+      } else {
+        alert("No se pudo iniciar la suscripción.");
+      }
+    } catch (err) {
+      alert("Ocurrió un error al conectar con PayPal.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <section class="text-gray-700 body-font overflow-hidden border-t border-gray-200">
-      <div class="container px-5 py-24 mx-auto flex flex-wrap">
-        <div class="lg:w-1/4 mt-48 hidden lg:block">
-          <div class="mt-px border-t border-gray-300 border-b border-l rounded-tl-lg rounded-bl-lg overflow-hidden">
-            <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start -mt-px">
-              Fingerstache disrupt
-            </p>
-            <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-              Franzen hashtag
-            </p>
-            <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-              Tilde art party
-            </p>
-            <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-              Banh mi cornhole
-            </p>
-            <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-              Waistcoat squid hexagon
-            </p>
-            <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-              Pinterest occupy authentic
-            </p>
-            <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-              Brooklyn helvetica
-            </p>
-            <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-              Long Feature Two
-            </p>
-            <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-              Feature One
-            </p>
-          </div>
+    <section className="flex-1 py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      {/* Hero Section */}
+      <div className="text-center mb-16">
+        <div className="flex justify-center mb-4">
+          <Crown className="w-12 h-12 text-yellow-400 fill-yellow-400" />
         </div>
-        <div class="flex lg:w-3/4 w-full flex-wrap lg:border border-gray-300 rounded-lg">
-          <div class="lg:w-1/3 lg:mt-px w-full mb-10 lg:mb-0 border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none">
-            <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
-              <h3 class="tracking-widest">START</h3>
-              <h2 class="text-5xl text-gray-900 font-medium leading-none mb-4 mt-2">
-                Free
-              </h2>
-              <span class="text-sm text-gray-600">Next 3 months</span>
-            </div>
-            <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">
-              Schlitz single-origin
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="h-12 text-gray-600 px-6 text-center leading-relaxed flex items-center justify-center">
-              Feature
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <div class="border-t border-gray-300 p-6 text-center rounded-bl-lg">
-              <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                Button
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  class="w-4 h-4 ml-auto"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7"></path>
-                </svg>
-              </button>
-              <p class="text-xs text-gray-500 mt-3">
-                Literally you probably haven't heard of them jean shorts.
-              </p>
+        <h1 className="text-white text-4xl md:text-5xl font-bold mb-4">
+          Suscripción <span className="text-yellow-400">QMat Plus</span>
+        </h1>
+        <p className="text-lg text-gray-200 max-w-2xl mx-auto">
+          Accede a la experiencia completa de aprendizaje con nuestra suscripción mensual.
+        </p>
+      </div>
+
+      {/* Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+        {features.map((feature, index) => (
+          <div key={index} className="card glass shadow-lg hover:shadow-xl transition-shadow">
+            <div className="card-body items-center text-center">
+              <div className="p-3 rounded-full bg-white/20 mb-4">
+                {feature.icon}
+              </div>
+              <h3 className="text-white card-title text-xl">{feature.title}</h3>
+              <p className="text-gray-200">{feature.description}</p>
             </div>
           </div>
-          <div class="lg:w-1/3 lg:-mt-px w-full mb-10 lg:mb-0 border-2 rounded-lg border-indigo-500 relative">
-            <span class="bg-indigo-500 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl">
-              POPULAR
-            </span>
-            <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
-              <h3 class="tracking-widest">PRO</h3>
-              <h2 class="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
-                $38
-                <span class="text-gray-600 text-base ml-1">/mo</span>
-              </h2>
-              <span class="text-sm text-gray-600">Charging $456 per year</span>
-            </div>
-            <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">
-              Schlitz single-origin
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
+        ))}
+      </div>
+
+      {/* Estado de suscripción */}
+      {isSubscribed ? (
+        <div className="mb-10 text-center">
+          <h2 className="text-yellow-400 text-4xl font-bold mb-2">¡Ya eres suscriptor QMat Plus!</h2>
+          <p className="text-white mb-4">
+            Disfruta de todos los beneficios de tu suscripción. Si deseas, puedes cancelar en cualquier momento.
+          </p>
+          <button
+            className="btn glass btn-outline"
+            onClick={handleCancel}
+            disabled={loading}
+          >
+            {loading ? "Cancelando..." : "Cancelar suscripción"}
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Single Pricing Plan */}
+          <div className="mb-20 text-center">
+            <h2 className="text-white text-3xl font-bold mb-8">Plan Mensual</h2>
+            <div className="card bg-gradient-to-t from-yellow-500 to-yellow-600/10 text-white shadow-2xl max-w-md mx-auto">
+              <div className="card-body items-center text-center">
+                <Crown className="w-12 h-12 mb-4 fill-white" />
+                <h3 className="card-title text-2xl mb-2">Suscripción Mensual</h3>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">$2.50</span>
+                  <span className="text-yellow-200"> / mes (USD)</span>
+                </div>
+                <ul className="space-y-3 mb-8 text-left">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-white" />
+                    <span>Acceso completo a todos los quizzes</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-white" />
+                    <span>Quizzes personalizados</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-white" />
+                    <span>Estadísticas detalladas</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-white" />
+                    <span>Reconocimientos y medallas</span>
+                  </li>
+                </ul>
+                <button
+                  className="btn btn-outline btn-lg w-full"
+                  onClick={handleSubscribe}
+                  disabled={loading}
                 >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="h-12 text-gray-600 text-center leading-relaxed flex items-center justify-center">
-              Feature
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <div class="p-6 text-center border-t border-gray-300">
-              <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                Button
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  class="w-4 h-4 ml-auto"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7"></path>
-                </svg>
-              </button>
-              <p class="text-xs text-gray-500 mt-3">
-                Literally you probably haven't heard of them jean shorts.
-              </p>
+                  {loading ? "Redirigiendo a PayPal..." : "Suscribirse ahora"}
+                </button>
+              </div>
             </div>
           </div>
-          <div class="lg:w-1/3 w-full lg:mt-px border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none">
-            <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
-              <h3 class="tracking-widest">BUSINESS</h3>
-              <h2 class="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
-                $54
-                <span class="text-gray-600 text-base ml-1">/mo</span>
-              </h2>
-              <span class="text-sm text-gray-600">Charging $648 per year</span>
+        </>
+      )}
+
+      {/* Testimonials */}
+      <div className="mb-20">
+        <h2 className="text-white text-3xl font-bold text-center mb-12">Experiencias de Usuarios</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {[
+            {
+              quote: "La suscripción me permitió practicar sin límites y mejorar mucho más rápido. ¡Recomendado!",
+              author: "María G.",
+              rating: 5
+            },
+            {
+              quote: "Las estadísticas detalladas me ayudan a enfocar mis estudios donde más lo necesito.",
+              author: "Carlos P.",
+              rating: 5
+            }
+          ].map((testimonial, index) => (
+            <div key={index} className="card glass shadow-lg">
+              <div className="card-body">
+                <div className="flex mb-2">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-white italic mb-4">"{testimonial.quote}"</p>
+                <p className="text-white font-semibold text-right">— {testimonial.author}</p>
+              </div>
             </div>
-            <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">
-              Schlitz single-origin
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="h-12 text-gray-600 text-center leading-relaxed flex items-center justify-center">
-              Feature
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  class="w-3 h-3"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              </span>
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.2"
-                class="w-5 h-5 text-gray-500"
-                viewBox="0 0 24 24"
-              >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-              </svg>
-            </p>
-            <div class="p-6 text-center border-t border-gray-300">
-              <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                Button
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  class="w-4 h-4 ml-auto"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7"></path>
-                </svg>
-              </button>
-              <p class="text-xs text-gray-500 mt-3">
-                Literally you probably haven't heard of them jean shorts.
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
+
+      {/* Final CTA */}
+      { !isSubscribed && (
+      <div className="text-center">
+        <h2 className="text-white text-3xl font-bold mb-6">¿Listo para suscribirte?</h2>
+        <p className="text-lg text-gray-200 mb-8 max-w-2xl mx-auto">
+          Únete a nuestra comunidad de aprendizaje y lleva tus conocimientos al siguiente nivel.
+        </p>
+        <button
+          className="btn btn-outline btn-lg gap-2"
+          onClick={handleSubscribe}
+          disabled={loading}
+        >
+          <Crown className="w-5 h-5" />
+          {loading ? "Redirigiendo a PayPal..." : "Suscríbete"}
+        </button>
+      </div>
+      )}
     </section>
   );
 };
+
+if (typeof window !== "undefined" && !document.getElementById("qmat-gradient-style-subscription")) {
+  const style = document.createElement("style");
+  style.id = "qmat-gradient-style-subscription";
+  style.innerHTML = `
+    .animated-gradient-bg {
+      background: linear-gradient(270deg, #f0596c, #824894, #f0596c, #824894);
+      background-size: 400% 400%;
+      animation: qmat-gradient 50s ease-in-out infinite;
+    }
+    @keyframes qmat-gradient {
+      0% {background-position:0% 50%}
+      50% {background-position:100% 50%}
+      100% {background-position:0% 50%}
+    }
+  `;
+  document.head.appendChild(style);
+}

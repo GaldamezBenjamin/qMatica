@@ -93,6 +93,9 @@ export const getPreguntas = () => apiRequest('/api/preguntas', 'GET');
 export const getPreguntaByID = (preguntaID) => apiRequest(`/api/preguntas/${preguntaID}`, 'GET');
 export const getPreguntasBySubcategoria = (subCategoriaID) => apiRequest(`/api/preguntas/subcategory/${subCategoriaID}`, 'GET');
 
+export const generateQuizzes = (data) => apiRequest('/api/quizzes/generate', 'POST', data);
+export const generatePreguntas = (data) => apiRequest('/api/preguntas/generate', 'POST', data);
+
 export const updateQuiz = (quizID, data) => apiRequest(`/api/quizzes/${quizID}`, 'PUT', data);
 export const updatePregunta = (preguntaID, data) => apiRequest(`/api/preguntas/${preguntaID}`, 'PUT', data);
 
@@ -119,3 +122,38 @@ export const deleteMensajeForo = (mensajeID) => apiRequest(`/api/mensajesforos/$
 export const getEXP = () => apiRequest('/api/exp', 'GET');
 export const getRangos = () => apiRequest('/api/exp/rangos', 'GET');
 export const getDifEXP = () => apiRequest('/api/exp/dificultad', 'GET');
+
+// Subida de PDF Temario M1 & 2 (multipart/form-data)
+// Permite pasar extractionType dinámicamente (por defecto "temario_m1")
+export const uploadTemarioPdf = async (file, extractionType = "temario_m1") => {
+  const user = auth.currentUser;
+  if (!user) throw new Error('No hay usuario autenticado');
+  const token = await user.getIdToken();
+
+  const formData = new FormData();
+  formData.append("pdfFile", file);
+  formData.append("extractionType", extractionType);
+
+  const response = await fetch("/api/pdf/upload-pdf", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      // No se debe poner Content-Type para FormData, el navegador lo agrega automáticamente
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Error en la solicitud');
+  }
+
+  return response.json();
+};
+
+// Bulk upload de categorías seleccionadas usando apiRequest
+export const bulkUploadCategorias = (data) =>
+  apiRequest('/api/bulk/upload-categorias', 'POST', data);
+
+export const uploadQuizzesAndQuestions = (data) =>
+  apiRequest('/api/bulk/upload-quizzes', 'POST', data);

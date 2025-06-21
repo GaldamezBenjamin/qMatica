@@ -34,6 +34,7 @@ import { useNavigate } from "react-router";
 import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import MyDocument from "./TemplatePDF";
 import { formatDate } from "date-fns";
+import { Link } from "react-router";
 
 // --- UserProfile principal ---
 const UserProfile = () => {
@@ -535,9 +536,9 @@ function PanelLegacy({ expAnterior, fechaSuscripcion }) {
               Fecha de suscripción
             </span>
             <span className="text-sm text-gray-500">{fechaSuscripcion}</span>
-            <button className="btn btn-outline btn-secondary btn-sm mt-2">
+            <Link to="/subscripcion" className="btn btn-outline btn-secondary btn-sm mt-2">
               Editar suscripción
-            </button>
+            </Link>
           </>
         ) : (
           <>
