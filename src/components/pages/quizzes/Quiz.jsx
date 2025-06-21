@@ -193,6 +193,11 @@ function Quiz({}) {
   let expMin = rangoActual.required_exp;
   let expMax = nextRango ? nextRango.required_exp : rangoActual.required_exp;
 
+  // Cambia expMax a 6000 si el rango es Bronce
+  if (rangoActual.nombre === "Bronce" || rangoActual.name === "Bronce" || expMin < 6000) {
+    expMax = 6000;
+  }
+
   let percent = 0;
   let percentWithQuiz = 0;
   const requiredExpPlata =

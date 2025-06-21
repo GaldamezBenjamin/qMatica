@@ -96,6 +96,8 @@ export const getPreguntasBySubcategoria = (subCategoriaID) => apiRequest(`/api/p
 export const generateQuizzes = (data) => apiRequest('/api/quizzes/generate', 'POST', data);
 export const generatePreguntas = (data) => apiRequest('/api/preguntas/generate', 'POST', data);
 
+export const createCustomQuiz = (data) => apiRequest('/api/quizzes/create-custom', 'POST', data);
+
 export const updateQuiz = (quizID, data) => apiRequest(`/api/quizzes/${quizID}`, 'PUT', data);
 export const updatePregunta = (preguntaID, data) => apiRequest(`/api/preguntas/${preguntaID}`, 'PUT', data);
 

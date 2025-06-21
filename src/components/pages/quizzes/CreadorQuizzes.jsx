@@ -6,10 +6,12 @@ import {
   getCategorias,
   getSubCategorias,
   getRangos,
+  createCustomQuiz, // <-- importar la función
 } from "../../../helpers/apiHelpers";
 import { ChevronRight, Settings, Filter, Check, X } from "lucide-react";
 import CatMenuItemCreator from "./CatMenuItemCreator";
 import Footer from "../../shared/Footer";
+import { useNavigate } from "react-router";
 
 // Panel superior con imagen y título mejorado
 const PanelSec = () => (
@@ -167,6 +169,9 @@ const CustomQuizCard = ({
   selectedCategories
 }) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [creating, setCreating] = useState(false);
+
   // Colores de dificultad como en QuizzesMenu
   const getDifficultyColor = () => {
     switch (dificultad?.toLowerCase()) {
@@ -184,15 +189,45 @@ const CustomQuizCard = ({
   };
   const difficultyColor = getDifficultyColor();
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    if (!selectedCategories.length) return;
+    setCreating(true);
+    // Escoge una subcategoría aleatoria
+    const randomIdx = Math.floor(Math.random() * selectedCategories.length);
+    const mainSubcat = selectedCategories[randomIdx];
+
+    // Genera nombre con números aleatorios
+    const randomNum = Math.floor(Math.random() * 100000);
+    const quizName = `${username}'s Custom Quiz ${randomNum}`;
+
+    // JSON en el formato solicitado
     const quizData = {
-      nombre: `${username}'s Custom Quiz`,
-      dificultad,
+      nombre: quizName,
+      dificultad: dificultad,
       cantidad_preguntas: cantidadPreguntas,
-      tiempo_estimado: -1,
-      sub_categorias: selectedCategories.map(cat => cat.id_subcategoria)
+      tiempo_estimado: cantidadPreguntas * 3,
+      main_subcategory: {
+        id: mainSubcat.id_subcategoria,
+        nombre: mainSubcat.nombre,
+      },
+      sub_categorias: selectedCategories.map(cat => cat.id_subcategoria),
     };
-    console.log(JSON.stringify(quizData, null, 2));
+
+    try {
+      const resp = await createCustomQuiz(quizData);
+      if (resp && resp.id_quiz) {
+        navigate("/quiz", { state: { quizId: resp.id_quiz } });
+      } else {
+        alert("No se pudo crear el quiz personalizado.");
+      }
+    } catch (err) {
+      alert(
+        err?.message ||
+        "Ocurrió un error inesperado al crear el quiz personalizado."
+      );
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -214,9 +249,13 @@ const CustomQuizCard = ({
         <button
           className={`btn rounded-xl h-20 w-20 flex items-center justify-center p-0 min-h-0 ${difficultyColor}`}
           onClick={handleCreate}
-          disabled={selectedCategories.length === 0}
+          disabled={selectedCategories.length === 0 || creating}
         >
-          <ChevronRight color="white" size={70} />
+          {creating ? (
+            <span className="loading loading-spinner loading-md"></span>
+          ) : (
+            <ChevronRight color="white" size={70} />
+          )}
         </button>
       </div>
     </div>

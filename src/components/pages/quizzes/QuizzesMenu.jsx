@@ -350,6 +350,9 @@ const QuizzesList = React.memo(
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const quizzesPerPage = 9;
 
     useEffect(() => {
       let mounted = true;
@@ -372,6 +375,8 @@ const QuizzesList = React.memo(
 
     const filteredQuizzes = useMemo(() => {
       let results = quizzes;
+      // Filtrar quizzes creados por usuario
+      results = results.filter(q => !q.user_created);
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
         results = results.filter((quiz) =>
@@ -385,6 +390,18 @@ const QuizzesList = React.memo(
       }
       return results;
     }, [searchTerm, selectedCategories, quizzes]);
+
+    // Calcular quizzes a mostrar en la página actual
+    const totalPages = Math.ceil(filteredQuizzes.length / quizzesPerPage);
+    const paginatedQuizzes = useMemo(() => {
+      const start = (currentPage - 1) * quizzesPerPage;
+      return filteredQuizzes.slice(start, start + quizzesPerPage);
+    }, [filteredQuizzes, currentPage]);
+
+    // Resetear página si cambia el filtro y la página actual queda fuera de rango
+    useEffect(() => {
+      if (currentPage > totalPages) setCurrentPage(1);
+    }, [filteredQuizzes, totalPages]);
 
     if (loading) {
       return (
@@ -442,8 +459,8 @@ const QuizzesList = React.memo(
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
-          {filteredQuizzes.length > 0 ? (
-            filteredQuizzes.map((quiz) => (
+          {paginatedQuizzes.length > 0 ? (
+            paginatedQuizzes.map((quiz) => (
               <QuizCard key={quiz.id_quiz} quiz={quiz} />
             ))
           ) : (
@@ -452,6 +469,34 @@ const QuizzesList = React.memo(
             </div>
           )}
         </div>
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8 gap-2">
+            <button
+              className="btn btn-sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
+              Anterior
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                className={`btn btn-sm ${currentPage === i + 1 ? "btn-primary" : "btn-ghost"}`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              className="btn btn-sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
       </>
     );
   }
